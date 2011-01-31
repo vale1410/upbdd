@@ -1,0 +1,7 @@
+here some ideas: 
+
+which key value map to use?
+* tommyD
+* trie 
+* google spares hashmap
+

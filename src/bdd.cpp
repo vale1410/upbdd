@@ -1,41 +1,91 @@
 #include <iostream>
+#include <string>
+#include <sstream>
+#include <stdlib.h>
+
+class Imp;
 
 class Bdd {
     public:
-        Bdd()
-        :level(0) 
-        {}
+        Bdd() :
+        level(0) ,
+        high(NULL)
+        {
+            
+        }
 
-        unsigned int level;
-        Bdd* high;
-        Bdd* low;
+        const unsigned int level;
+
+        const Bdd* high;
+        const Imp* hImp;
+        const Bdd* low;
+        const Imp* lImp;
+        
+        std::string toString() {
+            std::ostringstream oss;
+            oss << this << " = ";
+            oss << "(";
+            oss << level;
+            oss <<  ",";
+            oss << high;
+            oss <<  ",";
+            oss << hImp;
+            oss <<  ",";
+            oss << low;
+            oss <<  ",";
+            oss << lImp;
+            oss <<  ")";
+            return oss.str();
+        }
 };
 
 
 class Imp {
     public:
-        Imp()
-        :level(0) 
+        Imp():
+        level(0),
+        implications(431876543),
+        next(NULL)
         {}
 
-        unsigned int level;
-        Bdd* next;
-        Bdd* low;
+        const unsigned int level;
+        // bit 0 - 15 positive, bit 16 - 31 negative
+        const int implications;
+        const Imp* next;
+        
+        std::string toString() {
+            std::ostringstream oss;
+            oss << this << " = ";
+            oss << "(";
+            oss << level;
+            oss <<  ",";
+            oss << implications;
+            oss <<  ",";
+            oss << next;
+            oss <<  ")";
+            return oss.str();
+        }
 };
 
-size_t hash(Bdd& bdd) 
+
+void printImp(Imp imp) 
 {
-    std::cout << bdd.high << std::endl;
-    std::cout << bdd.low << std::endl;
-    return bdd.level;
+    std::cout << "imp: " << imp.toString() << std::endl;
+}
+
+void printBdd(Bdd& bdd) 
+{
+    std::cout << "bdd: " << bdd.toString() << std::endl;
 }
 
 
 int main () 
 {
     Bdd bdd;
+    Imp imp;
     std::cout << "first tests for bdds" << std::endl;
-    std::cout << hash(bdd) << std::endl;
+    printBdd(bdd);
+    printImp(imp);
     return 0; 
 } 
 
