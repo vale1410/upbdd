@@ -7,33 +7,36 @@ class Imp;
 
 class Bdd {
     public:
-        Bdd() :
-        level(0) ,
-        high(NULL)
+        Bdd(unsigned int level,Imp* hImp,Imp* lImp) :
+        _level(level),
+        _high(NULL),
+        _hImp(hImp),
+        _low(NULL),
+        _lImp(lImp)
         {
             
         }
 
-        const unsigned int level;
+        const unsigned int _level;
 
-        const Bdd* high;
-        const Imp* hImp;
-        const Bdd* low;
-        const Imp* lImp;
+        const Bdd* _high;
+        const Imp* _hImp;
+        const Bdd* _low;
+        const Imp* _lImp;
         
         std::string toString() {
             std::ostringstream oss;
             oss << this << " = ";
             oss << "(";
-            oss << level;
+            oss << _level;
             oss <<  ",";
-            oss << high;
+            oss << _high;
             oss <<  ",";
-            oss << hImp;
+            oss << _hImp;
             oss <<  ",";
-            oss << low;
+            oss << _low;
             oss <<  ",";
-            oss << lImp;
+            oss << _lImp;
             oss <<  ")";
             return oss.str();
         }
@@ -81,11 +84,15 @@ void printBdd(Bdd& bdd)
 
 int main () 
 {
-    Bdd bdd;
+    unsigned int level = 5;
     Imp imp;
+    Bdd bdd(level,&imp,&imp);
     std::cout << "first tests for bdds" << std::endl;
-    printBdd(bdd);
     printImp(imp);
+    printBdd(bdd);
+
+    std::cout << "size of bdd " << sizeof(bdd) << std::endl;
+    std::cout << "size of imp " << sizeof(imp) << std::endl;
     return 0; 
 } 
 
