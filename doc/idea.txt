@@ -1,7 +1,14 @@
 here some ideas: 
 
 which key value map to use?
+* first shot: boost::unordered_map -> easily replaceable with others after
 * tommyD
 * trie 
 * google spares hashmap
 
+garbage collection: 
+* first use boost::shared_prt, overhead ulong (64bit)
+* maybe later: boost::intrusive_ptr is the right thing to use?
+
+for testing:
+* memory leaks: http://valgrind.org/info/about.html
