@@ -12,3 +12,18 @@ garbage collection:
 
 for testing:
 * memory leaks: http://valgrind.org/info/about.html
+
+parallel
+* using boost::thread for a selection of heuristics. after N rounds, do join() on all and compute conjunction of feedback. 
+* heuristic: low first, high first, random, every second ( trying to hit centre. most implications. deepest edge, non deepest edge. 
+
+search feedback: 
+* is it a special kind of bdd that is return by one run?
+* is the conjunction of these return bdds, again a special class? 
+
+reorder thoughts:
+* how do we reorder with implications?
+
+return value of search
+* (FINISHED|STOPPED|UNSATIFIABLE), Bdd result, Bdd rest)
+
