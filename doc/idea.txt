@@ -24,6 +24,15 @@ search feedback:
 reorder thoughts:
 * how do we reorder with implications?
 
-return value of search
-* (FINISHED|STOPPED|UNSATIFIABLE), Bdd result, Bdd rest)
+
+
+return value of search:
+* (FINISHED|STOPPED|UNSATIFIABLE), ImpBdd result, ImpBdd rest)
+
+class ImpBdd {
+
+Imp::ConstSP imp;
+Bdd::ConstSP bdd; 
+
+}
 
