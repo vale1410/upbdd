@@ -189,6 +189,9 @@ class ImpStore {
 };
 
 class Backend {
+    typedef boost::shared_ptr<Backend> SP;
+    typedef const boost::shared_ptr<Backend> ConstSP;
+
     public:
         Backend(unsigned int bddSize, unsigned int impSize):
             bddStore(bddSize),
