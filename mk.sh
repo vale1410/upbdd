@@ -1,4 +1,4 @@
 #!/bin/bash
 
-g++ -Wall src/bdd.cpp -o bin/start
+g++ -Wall -g src/bdd.cpp -o bin/start
 ./bin/start
