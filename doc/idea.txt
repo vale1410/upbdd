@@ -36,3 +36,7 @@ Bdd::ConstSP bdd;
 
 }
 
+TODO learning vim: 
+* tabs
+* gvim
+* delete word under cursor
