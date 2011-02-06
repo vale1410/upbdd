@@ -97,8 +97,12 @@ class Imp {
         oss << getNeg();
         return oss.str();
     }
+     /*
+    BddP apply(BddP bdd) {
+                    
+    }
+    */
 };
-
 
 class Bdd {
     public:
@@ -116,6 +120,14 @@ class Bdd {
      BddP _low;
      ImpP _hImp;
      ImpP _lImp;
+
+//     UpBdd getUpBddHigh() {
+//         return UpBdd(_high,_hImp);
+//     }
+//     
+//     UpBdd getUpBddLow() {
+//         return UpBdd(_low,_lImp);
+//     }
      
      std::string toString() const {
          std::ostringstream oss;
@@ -204,18 +216,33 @@ class BddStore {
             return store.find(bdd) != store.end();
         }  
 
-        BddP add(const Bdd bdd)  {
+        /*
+         * TODO: give back the upbdd, not bdd!
+        UpBdd add(const Bdd bdd)  {
             BddStoreT::iterator i = store.find(bdd);
-            BddP result;
+            UpBdd result;
             if (i != store.end() ) {
-                result = i->second;
-            } else {
+                result = UpBdd(impOne,i->second);
+            } else if(bdd._high == bdd._low && bdd._hImp == bdd._lImp) {
                 result = new Bdd(bdd);
                 store[bdd]=result;
             }            
             return result;
         }
+        */
     
+        BddP add(const Bdd bdd)  {
+            BddStoreT::iterator i = store.find(bdd);
+            BddP result;
+            if (i != store.end() ) {
+                result = i->second;
+            } else if(bdd._high == bdd._low && bdd._hImp == bdd._lImp) {
+                result = new Bdd(bdd);
+                store[bdd]=result;
+            }            
+            return result;
+        }
+        
         void debug() const {
             BOOST_FOREACH(const BddStoreT::value_type& i , store) {
                 if (i.second != bddOne) printBdd(i.second);
@@ -315,6 +342,7 @@ class Backend {
     private:
         BddStore bddStore;
         ImpStore impStore;
+        //BddAndStore bddAndStore;
 };
 
 ImpReturn impAnd(ImpP a, ImpP b, Backend::SP backend) {
@@ -367,19 +395,31 @@ ImpReturn impAnd(ImpP a, ImpP b, Backend::SP backend) {
     }
     return result;
 }
-
-BddReturn bddAnd(BddP a, BddP b, ImpP imp, Backend::SP backend) {
+/* TODO: finish bddAnd
+BddReturn bddAnd(UpBdd a, UpBdd b, ImpP imp, Backend::SP backend) {
     BddReturn result;
-    // check in cache wheather a,b has been called before
-    if (imp != impOne) {
-        //check if implication has effects on a or b
-        // if yes, go further down and call again bddAnd
-    }
-    if (a->_level == b->_level) {
-        
-    }
-    return result;
+    ImpReturn impR = andImp(imp,a.first,b.first);
+    if (impR.first == UNSAT) {
+        result.first = UNSAT;
+        return result; 
+    } else {
+        imp = impR.second;
+        UpBdd aa = imp->apply(a.second);
+        aa.first = impOne;
+        UpBdd bb = imp->apply(b.second);
+        bb.first = impOne;
+        if (a.second != aa.second || b.second != bb.second) {
+            return bddAnd(aa,bb,imp,backend);
+        }
+
+        if (a->_level == b->_level) {
+            BddReturn hReturn = bddAnd(aa.second->getUpBddHigh(),bb.second->getUpBddHigh());    
+
+            BddReturn lReturn = bddAnd(aa.second->getUpBddLow(),bb.second->getUpBddLow());    
+        }
+        return result;
 }
+*/
 
 
 void testSetup() {
@@ -403,12 +443,14 @@ void testSetup() {
 void testSizes();
 void testImp();
 void testBdd();
+void testHashFunction();
 
 int main () 
 {
     testSizes();
     testImp();
     testBdd();
+    testHashFunction();
 } 
 
 bool testBdd1() {
@@ -574,3 +616,17 @@ void testSizes() {
     std::cout << "output of bddOne " << bddOne << std::endl;
     std::cout << "output of impOne " << impOne << std::endl;
 }
+
+
+void testHashFunction() {
+    size_t hash = 0; 
+    boost::hash_combine(hash,1);
+    std::cout << hash << std::endl;
+    boost::hash_combine(hash,1);
+    std::cout << hash << std::endl;
+    boost::hash_combine(hash,2);
+    std::cout << hash << std::endl;
+    boost::hash_combine(hash,3);
+    std::cout << hash << std::endl;
+}
+
