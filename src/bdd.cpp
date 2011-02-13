@@ -9,6 +9,7 @@
 
 class Imp;
 class Bdd;
+class UpBdd;
 class ImpHashFunction;
 class BddHashFunction;
 
@@ -17,28 +18,29 @@ enum Feedback { SAT, UNSAT, BREAK };
 typedef unsigned int Level;
 typedef Imp* ImpP;
 typedef Bdd* BddP;
-typedef std::pair<ImpP,BddP> UpBdd;
 typedef std::pair<Feedback,ImpP> ImpReturn;
 typedef std::pair<Feedback,UpBdd> BddReturn;
 
+Bdd* bddOne = NULL;
+Imp* impOne = NULL;
 
 class Imp {
     public:
 
 
-    Imp(Level level, std::bitset<2*8> imp, Imp* next):
+    Imp(Level level, std::bitset<2*8> imp, ImpP next):
         _level(level),
         _imp(imp),
-        _next(next)
+        _nextP(next)
     {}
 
     Level _level;
     std::bitset<2*8> _imp;
-    Imp* _next;
+    ImpP _nextP;
     
     std::string toString() const {
         std::ostringstream oss;
-        oss << this << " = " << "(" << _level <<  "," << pos() <<  "," << neg() << "," << _next <<  ")";
+        oss << this << " = " << "(" << _level <<  "," << pos() <<  "," << neg() << "," << _nextP <<  ")";
         return oss.str();
     }
 
@@ -104,48 +106,58 @@ class Imp {
     */
 };
 
+
+class UpBdd {
+    public:
+
+    UpBdd(ImpP impP,BddP bddP):
+        _bddP(bddP),
+        _impP(impP)
+    {} 
+
+    bool operator==(const UpBdd &other) const {
+        return _bddP == other._bddP && _impP == other._impP;
+    }
+
+
+    BddP _bddP;
+    ImpP _impP;
+};
+
 class Bdd {
     public:
         
-    Bdd(Level level, BddP high, BddP low, ImpP hImp, ImpP lImp) :
+    Bdd(Level level, UpBdd high, UpBdd low) :
         _level(level),
         _high(high),
-        _low(low),
-        _hImp(hImp),
-        _lImp(lImp) 
+        _low(low)
+        {}
+                
+    Bdd(Level level, BddP highP, BddP lowP, ImpP hImpP, ImpP lImpP) :
+        _level(level),
+        _high(hImpP,highP),
+        _low(lImpP,lowP)
         {}
 
-     Level _level;
-     BddP _high;
-     BddP _low;
-     ImpP _hImp;
-     ImpP _lImp;
-
-//     UpBdd getUpBddHigh() {
-//         return UpBdd(_high,_hImp);
-//     }
-//     
-//     UpBdd getUpBddLow() {
-//         return UpBdd(_low,_lImp);
-//     }
-     
-     std::string toString() const {
-         std::ostringstream oss;
-         oss << this << " = " << "(" << _level <<  "," << _high <<  "," << _low <<  "," << _hImp <<  "," << _lImp <<  ")";
-         return oss.str();
-     }
+    Level _level;
+    UpBdd _high; 
+    UpBdd _low;
+    
+    std::string toString() const {
+        std::ostringstream oss;
+        // << this << " = " << "(" << _level <<  ",<" << _high._impP <<  "," << _low._bddP <<  ">,<" << _low._impP <<  "," << _low._bddP <<  ">)";
+        return oss.str();
+    }
 };
 
-Bdd* bddOne = NULL;
-Imp* impOne = NULL;
 
 class ImpHashFunction : std::unary_function< Imp , size_t > {
     public:
         inline size_t operator() (const Imp& imp) const {
             boost::hash<ImpP> hasher;
-            std::size_t hash = imp._imp.to_ulong() + hasher(imp._next) + imp._level;
+            std::size_t hash = imp._imp.to_ulong() + hasher(imp._nextP) + imp._level;
             boost::hash_combine(hash, imp._imp.to_ulong());
-            boost::hash_combine(hash, imp._next);
+            boost::hash_combine(hash, imp._nextP);
             boost::hash_combine(hash, imp._level);
             return hash;
         }
@@ -156,13 +168,21 @@ class BddHashFunction : std::unary_function< Bdd , size_t > {
         inline size_t operator() (const Bdd& bdd) const {
             boost::hash<BddP> hasherBdd;
             boost::hash<ImpP> hasherImp;
-            std::size_t hash = hasherBdd(bdd._high) + hasherBdd(bdd._low) + hasherImp(bdd._hImp) + hasherImp(bdd._lImp) + bdd._level;
-            boost::hash_combine(hash, bdd._high);
-            boost::hash_combine(hash, bdd._low);
-            boost::hash_combine(hash, bdd._hImp);
-            boost::hash_combine(hash, bdd._lImp);
+            std::size_t hash = hasherBdd(bdd._high._bddP) + hasherBdd(bdd._low._bddP) + hasherImp(bdd._high._impP) + hasherImp(bdd._low._impP) + bdd._level;
+            boost::hash_combine(hash, bdd._high._bddP);
+            boost::hash_combine(hash, bdd._low._bddP);
+            boost::hash_combine(hash, bdd._high._impP);
+            boost::hash_combine(hash, bdd._low._impP);
             boost::hash_combine(hash, bdd._level);
             return hash;
+        }
+};
+
+class UpBddEqual : std::equal_to< UpBdd > {
+    public:
+        bool operator() (const UpBdd& a, const UpBdd& b) const {
+            return (a._bddP ==  b._bddP &&
+                    a._impP  ==  b._impP);
         }
 };
 
@@ -171,9 +191,7 @@ class BddEqual : std::equal_to< Bdd > {
         bool operator() (const Bdd& a, const Bdd& b) const {
             return (a._level ==  b._level &&
                     a._high  ==  b._high  &&
-                    a._low   ==  b._low   &&
-                    a._hImp  ==  b._hImp  &&
-                    a._lImp  ==  b._lImp);
+                    a._low   ==  b._low);
         }
 };
 
@@ -183,7 +201,7 @@ class ImpEqual : std::equal_to< Imp > {
         bool operator() (const Imp& a, const Imp& b) const {
             return (a._level ==  b._level &&
                     a._imp   ==  b._imp  &&
-                    a._next  ==  b._next);
+                    a._nextP  ==  b._nextP);
         }
 };
 
@@ -202,6 +220,16 @@ void printBdd(const Bdd* bdd)
 typedef boost::unordered_map< Bdd, BddP, BddHashFunction, BddEqual > BddStoreT;
 typedef boost::unordered_map< Imp, ImpP, ImpHashFunction, ImpEqual > ImpStoreT;
 
+
+class IntersectResult {
+    public: 
+        
+        ImpP _upP;
+        ImpP _highP;
+        ImpP _lowP;
+};
+
+
 class BddStore {
     public: 
 
@@ -216,30 +244,27 @@ class BddStore {
             return store.find(bdd) != store.end();
         }  
 
-        /*
-         * TODO: give back the upbdd, not bdd!
+        
         UpBdd add(const Bdd bdd)  {
+            UpBdd high = bdd._high;
+            UpBdd low = bdd._low;
+            UpBdd result(impOne,bddOne);
+            /*
+            if (high == low) {
+                return high;
+            }
+
+            IntersectResult intersection = intersection(high._impP,low._impP);
+            high._impP = intersection._highP;
+            low._impP = intersection._lowP;
+            //Bdd resBdd(
             BddStoreT::iterator i = store.find(bdd);
-            UpBdd result;
             if (i != store.end() ) {
                 result = UpBdd(impOne,i->second);
             } else if(bdd._high == bdd._low && bdd._hImp == bdd._lImp) {
-                result = new Bdd(bdd);
+                result = new Bdd(bdd); // memory unsafe!
                 store[bdd]=result;
-            }            
-            return result;
-        }
-        */
-    
-        BddP add(const Bdd bdd)  {
-            BddStoreT::iterator i = store.find(bdd);
-            BddP result;
-            if (i != store.end() ) {
-                result = i->second;
-            } else if(bdd._high == bdd._low && bdd._hImp == bdd._lImp) {
-                result = new Bdd(bdd);
-                store[bdd]=result;
-            }            
+            }*/
             return result;
         }
         
@@ -315,7 +340,7 @@ class Backend {
         }
 
         inline BddP add(const Bdd bdd) {
-            return bddStore.add(bdd);
+            return bddStore.add(bdd)._bddP; // TODO correct
         }
 
         inline bool lookup(const Imp imp) const {
@@ -342,8 +367,10 @@ class Backend {
     private:
         BddStore bddStore;
         ImpStore impStore;
-        //BddAndStore bddAndStore;
+        //BddAndStore bddAndStore;  // cache for andBdd
 };
+
+// TODO: rename to impUnion
 
 ImpReturn impAnd(ImpP a, ImpP b, Backend::SP backend) {
     ImpReturn result;
@@ -359,16 +386,16 @@ ImpReturn impAnd(ImpP a, ImpP b, Backend::SP backend) {
             result.first = UNSAT;
             return result;
         } else {
-            nextA = a->_next;
-            nextB = b->_next;
+            nextA = a->_nextP;
+            nextB = b->_nextP;
         }
     } else if (a->_level < b->_level) {
         nextA = a;
-        nextB = b->_next;
+        nextB = b->_nextP;
         imp._level = b->_level;
         imp._imp = b->_imp;
     } else {
-        nextA = a->_next;
+        nextA = a->_nextP;
         nextB = b;
         imp._level = a->_level;
         imp._imp = a->_imp; 
@@ -389,7 +416,7 @@ ImpReturn impAnd(ImpP a, ImpP b, Backend::SP backend) {
         return recursion;
     } else {
         result.first = SAT;
-        imp._next = recursion.second;
+        imp._nextP = recursion.second;
         result.second = backend->add(imp);
         return result;
     }
@@ -452,7 +479,7 @@ int main ()
     testBdd();
     testHashFunction();
 } 
-
+/*
 bool testBdd1() {
     Backend::SP backend(new Backend(20,20));
     size_t before = backend->sizeBdd();
@@ -480,10 +507,11 @@ bool testBdd2() {
     backend->add(bdd2);
     return before + 2 == backend->sizeBdd();
 }
+*/
 
 void testBdd() {
-    std::cout << "testBdd 1: " << testBdd1() << std::endl;
-    std::cout << "testBdd 2: " << testBdd2() << std::endl;
+    //std::cout << "testBdd 1: " << testBdd1() << std::endl;
+    //std::cout << "testBdd 2: " << testBdd2() << std::endl;
     //std::cout << "testBdd 3: " << testBdd3() << std::endl;
     //std::cout << "testBdd 4: " << testBdd4() << std::endl;
     //std::cout << "testBdd 5: " << testBdd5() << std::endl;
@@ -613,8 +641,8 @@ void testSizes() {
     std::cout << "size of int " << sizeof(a) << std::endl;
     std::cout << "size of long " << sizeof(b) << std::endl;
     std::cout << "size of size_t " << sizeof(c) << std::endl;
-    std::cout << "output of bddOne " << bddOne << std::endl;
-    std::cout << "output of impOne " << impOne << std::endl;
+    std::cout << "where points bddOne " << bddOne << std::endl;
+    std::cout << "where points impOne " << impOne << std::endl;
 }
 
 
