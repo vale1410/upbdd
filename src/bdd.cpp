@@ -370,13 +370,12 @@ class Backend {
         //BddAndStore bddAndStore;  // cache for andBdd
 };
 
-// TODO: rename to impUnion
 
-ImpReturn impAnd(ImpP a, ImpP b, Backend::SP backend) {
+ImpReturn impUnion(ImpP a, ImpP b, Backend::SP backend) {
     ImpReturn result;
     Imp imp(0,0x00,NULL);
-    Imp* nextA;
-    Imp* nextB;
+    ImpP nextA;
+    ImpP nextB;
     ImpReturn recursion;
     if (a->_level == b->_level) {
         imp._level = a->_level;
@@ -409,7 +408,7 @@ ImpReturn impAnd(ImpP a, ImpP b, Backend::SP backend) {
         recursion.first = SAT;
         recursion.second = nextA;
     } else {
-        recursion = impAnd(nextA,nextB,backend);
+        recursion = impUnion(nextA,nextB,backend);
     }
 
     if (recursion.first == UNSAT) {
@@ -422,6 +421,7 @@ ImpReturn impAnd(ImpP a, ImpP b, Backend::SP backend) {
     }
     return result;
 }
+
 /* TODO: finish bddAnd
 BddReturn bddAnd(UpBdd a, UpBdd b, ImpP imp, Backend::SP backend) {
     BddReturn result;
@@ -474,10 +474,10 @@ void testHashFunction();
 
 int main () 
 {
-    testSizes();
+    //testSizes();
     testImp();
-    testBdd();
-    testHashFunction();
+    //testBdd();
+    //testHashFunction();
 } 
 /*
 bool testBdd1() {
@@ -561,10 +561,11 @@ bool testImp4() {
     Imp i3(1,0x0110,impOne); // 1
     ImpP iP1 = backend->add(i1);
     ImpP iP2 = backend->add(i2);
-    ImpReturn result = impAnd(iP1,iP2,backend);
+    ImpReturn result = impUnion(iP1,iP2,backend);
     ok = result.first == SAT;
-    ok = result.second->_imp == i3._imp;
-    ok = before + 3 == backend->sizeImp();
+    ok = ok && result.second->_imp == i3._imp;
+    ok = ok && before + 3 == backend->sizeImp();
+    //backend->debug();
     return ok;
 }
 
@@ -577,9 +578,9 @@ bool testImp5() {
     Imp i2(1,0x0001,impOne); // 1
     ImpP iP1 = backend->add(i1);
     ImpP iP2 = backend->add(i2);
-    ImpReturn result = impAnd(iP1,iP2,backend);
+    ImpReturn result = impUnion(iP1,iP2,backend);
     ok = result.first == UNSAT;
-    ok = before + 2 == backend->sizeImp();
+    ok = ok && before + 2 == backend->sizeImp();
     return ok;
 }
 
@@ -592,9 +593,9 @@ bool testImp6() {
     Imp i2(2,0x0001,impOne); // 1
     ImpP iP1 = backend->add(i1);
     ImpP iP2 = backend->add(i2);
-    ImpReturn result = impAnd(iP1,iP2,backend);
+    ImpReturn result = impUnion(iP1,iP2,backend);
     ok = result.first == SAT;
-    ok = before + 3 == backend->sizeImp();
+    ok = ok && before + 3 == backend->sizeImp();
     //backend->debug();
     return ok;
 }
@@ -608,12 +609,33 @@ bool testImp7() {
     Imp i2(2,0x0001,impOne); // 1
     ImpP iP1 = backend->add(i1);
     ImpP iP2 = backend->add(i2);
-    ImpReturn result = impAnd(iP2,iP1,backend);
+    ImpReturn result = impUnion(iP2,iP1,backend);
     ok = result.first == SAT;
-    ok = before + 3 == backend->sizeImp();
+    ok = ok && before + 3 == backend->sizeImp();
     //backend->debug();
     return ok;
 }
+
+// impIntersection
+/*
+bool testImp7() {
+    Backend::SP backend(new Backend(20,20));
+    size_t before = backend->sizeImp();
+    bool ok = true;
+    Imp i1(1,0x0100,impOne); // 1
+    Imp i2(1,0x0010,impOne); // 1
+    Imp i3(1,0x0110,impOne); // 1
+    ImpP iP1 = backend->add(i1);
+    ImpP iP2 = backend->add(i2);
+    ImpP iP3 = backend->add(i3);
+    ImpReturn result = impIntersection(iP1,iP2,backend);
+    ok = result.first == SAT;
+    ok = ok && result.second->_imp == i3._imp;
+    ok = ok && before + 3 == backend->sizeImp();
+    backend->debug();
+    return ok;
+}
+*/
 
 void testImp() {
     std::cout << "testImp 1: " << testImp1() << std::endl;
