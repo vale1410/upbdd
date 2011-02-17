@@ -370,6 +370,56 @@ class Backend {
         //BddAndStore bddAndStore;  // cache for andBdd
 };
 
+ImpReturn impIntersection(ImpP a, ImpP b, Backend::SP backend) {
+    ImpReturn result;
+    Imp imp(0,0x00,NULL);
+    ImpP nextA;
+    ImpP nextB;
+    ImpReturn recursion;
+    if (a->_level == b->_level) {
+        imp._level = a->_level;
+        imp.setPos(a->getPos() | b->getPos());
+        imp.setNeg(a->getNeg() | b->getNeg());
+        if(imp.getPos().to_ulong() & imp.getNeg().to_ulong()) {
+            result.first = UNSAT;
+            return result;
+        } else {
+            nextA = a->_nextP;
+            nextB = b->_nextP;
+        }
+    } else if (a->_level < b->_level) {
+        nextA = a;
+        nextB = b->_nextP;
+        imp._level = b->_level;
+        imp._imp = b->_imp;
+    } else {
+        nextA = a->_nextP;
+        nextB = b;
+        imp._level = a->_level;
+        imp._imp = a->_imp; 
+    }
+    
+    if (nextA == impOne) {
+        recursion.first = SAT;
+        recursion.second = nextB;
+    }
+    else if (nextB == impOne) {
+        recursion.first = SAT;
+        recursion.second = nextA;
+    } else {
+        recursion = impIntersection(nextA,nextB,backend);
+    }
+
+    if (recursion.first == UNSAT) {
+        return recursion;
+    } else {
+        result.first = SAT;
+        imp._nextP = recursion.second;
+        result.second = backend->add(imp);
+        return result;
+    }
+    return result;
+}
 
 ImpReturn impUnion(ImpP a, ImpP b, Backend::SP backend) {
     ImpReturn result;
@@ -509,15 +559,6 @@ bool testBdd2() {
 }
 */
 
-void testBdd() {
-    //std::cout << "testBdd 1: " << testBdd1() << std::endl;
-    //std::cout << "testBdd 2: " << testBdd2() << std::endl;
-    //std::cout << "testBdd 3: " << testBdd3() << std::endl;
-    //std::cout << "testBdd 4: " << testBdd4() << std::endl;
-    //std::cout << "testBdd 5: " << testBdd5() << std::endl;
-    //std::cout << "testBdd 6: " << testBdd6() << std::endl;
-    //std::cout << "testBdd 7: " << testBdd6() << std::endl;
-}
 
 
 bool testImp1() {
@@ -617,37 +658,56 @@ bool testImp7() {
 }
 
 // impIntersection
-/*
-bool testImp7() {
+bool testImp8() {
     Backend::SP backend(new Backend(20,20));
-    size_t before = backend->sizeImp();
     bool ok = true;
     Imp i1(1,0x0100,impOne); // 1
     Imp i2(1,0x0010,impOne); // 1
-    Imp i3(1,0x0110,impOne); // 1
     ImpP iP1 = backend->add(i1);
     ImpP iP2 = backend->add(i2);
-    ImpP iP3 = backend->add(i3);
     ImpReturn result = impIntersection(iP1,iP2,backend);
     ok = result.first == SAT;
-    ok = ok && result.second->_imp == i3._imp;
-    ok = ok && before + 3 == backend->sizeImp();
+    ok = ok && result.second == impOne;
     backend->debug();
     return ok;
 }
-*/
 
-void testImp() {
-    std::cout << "testImp 1: " << testImp1() << std::endl;
-    std::cout << "testImp 2: " << testImp2() << std::endl;
-    std::cout << "testImp 3: " << testImp3() << std::endl;
-    std::cout << "testImp 4: " << testImp4() << std::endl;
-    std::cout << "testImp 5: " << testImp5() << std::endl;
-    std::cout << "testImp 6: " << testImp6() << std::endl;
-    std::cout << "testImp 7: " << testImp6() << std::endl;
+bool testImp9() {
+    Backend::SP backend(new Backend(20,20));
+    bool ok = true;
+    Imp i1(1,0xA300,impOne); // 1
+    Imp i2(1,0xFC00,impOne); // 1
+    Imp i3(1,0xA000,impOne); // 1
+    ImpP iP1 = backend->add(i1);
+    ImpP iP2 = backend->add(i2);
+    ImpReturn result = impIntersection(iP1,iP2,backend);
+    ok = result.first == SAT;
+    ok = ok && result.second->_imp == i3._imp;
+    backend->debug();
+    return ok;
 }
 
+void testBdd() {
+    //std::cout << "testBdd 1: " << testBdd1() << std::endl;
+    //std::cout << "testBdd 2: " << testBdd2() << std::endl;
+    //std::cout << "testBdd 3: " << testBdd3() << std::endl;
+    //std::cout << "testBdd 4: " << testBdd4() << std::endl;
+    //std::cout << "testBdd 5: " << testBdd5() << std::endl;
+    //std::cout << "testBdd 6: " << testBdd6() << std::endl;
+    //std::cout << "testBdd 7: " << testBdd6() << std::endl;
+}
 
+void testImp() {
+    //std::cout << "testImp 1: " << testImp1() << std::endl;
+    //std::cout << "testImp 2: " << testImp2() << std::endl;
+    //std::cout << "testImp 3: " << testImp3() << std::endl;
+    //std::cout << "testImp 4: " << testImp4() << std::endl;
+    //std::cout << "testImp 5: " << testImp5() << std::endl;
+    //std::cout << "testImp 6: " << testImp6() << std::endl;
+    //std::cout << "testImp 7: " << testImp7() << std::endl;
+    std::cout << "testImp 8: " << testImp8() << std::endl;
+    std::cout << "testImp 9: " << testImp9() << std::endl;
+}
 
 void testSizes() {
     Level level = 123;
