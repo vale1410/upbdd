@@ -1,0 +1,15 @@
+next days: 
+[] plane: impSubtraction. for that you can check if not exists already for bitest
+[] first day: bddAnd ... (simple,with rest)
+[] second day: finish bddAnd, test suite
+
+unordered: 
+* split into several files: imp, upbdd, backend, test, inout, 
+* read DIMACS files into vector<vector<int>>
+* sort vector of ints nicely
+* ints to upbdds
+* search stage 1: simple left first search, bitset with implications, bitset with decision, simple step, no feedback
+* search start 2: with feedback, n steps, rest BDD, as result
+* bddAND with rest
+* conjunction of initBdds smarter: if variable all the same -> conjunct
+
