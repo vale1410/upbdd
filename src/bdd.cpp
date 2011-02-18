@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstdlib>
 #include <string>
 #include <sstream>
 #include <bitset>
@@ -374,11 +375,38 @@ class Backend {
         //BddAndStore bddAndStore;  // cache for andBdd
 };
 
+// a - b = a XOR impIntersection(a,b)
+ImpP impSubtraction(ImpP a, ImpP b, Backend::SP backend) {
+    ImpP nextA;
+    ImpP nextB;
+    Imp imp = Imp(a->_level,0x0000,impOne);
+    if (a->_level == b->_level) {
+        imp.setPos(a->getPos() ^ (a->getPos() & b->getPos()));
+        imp.setNeg(a->getNeg() ^ (a->getNeg() & b->getNeg()));
+        nextA = a->_nextP;
+        nextB = b->_nextP;
+    } else if (a->_level < b->_level) {
+        nextA = a;
+        nextB = b->_nextP;
+    } else {
+        nextA = a->_nextP;
+        nextB = b;
+    }
+
+    if (nextB == impOne) {
+        imp._nextP = nextA;
+    } else if (nextA == impOne) {
+        imp._nextP = impOne;
+    } else {
+        imp._nextP = impSubtraction(nextA,nextB,backend); 
+    }
+    return backend->add(imp);
+}
+
 ImpP impIntersection(ImpP a, ImpP b, Backend::SP backend) {
     Imp imp = Imp(1,0x0000,impOne);
-    Imp* nextA;
-    Imp* nextB;
-    ImpReturn recursion;
+    ImpP nextA;
+    ImpP nextB;
     if (a->_level == b->_level) {
         imp._level = a->_level;
         imp.setPos(a->getPos() & b->getPos());
@@ -403,8 +431,8 @@ ImpP impIntersection(ImpP a, ImpP b, Backend::SP backend) {
 ImpReturn impUnion(ImpP a, ImpP b, Backend::SP backend) {
     ImpReturn result;
     Imp imp(0,0x0000,NULL);
-    Imp* nextA;
-    Imp* nextB;
+    ImpP nextA;
+    ImpP nextB;
     ImpReturn recursion;
     if (a->_level == b->_level) {
         imp._level = a->_level;
@@ -701,17 +729,68 @@ bool testImp10() {
     return ok;
 }
 
+bool testImp11() {
+    Backend::SP backend(new Backend(20,20));
+    size_t before = backend->sizeImp();
+    bool ok = true;
+    Imp i1(1,0x0100,impOne); // 1
+    Imp i2(2,0xF000,impOne); // 1
+    Imp i3(2,0xFF00,impOne); // 1
+    ImpP iP1 = backend->add(i1);
+    ImpP iP2 = backend->add(i2);
+    ImpP iP3 = backend->add(i3);
+    ImpReturn result = impUnion(iP1,iP2,backend);
+    ImpP iP4 = result.second;
+    ImpP iP5 = impSubtraction(iP3,iP4,backend);
+    ImpP iP6 = impSubtraction(iP4,iP3,backend);
+    ok = ok;// & iP5 && iP6 && before;
+    backend->debug();
+    return ok;
+}
+
+bool testImp12() {
+    Backend::SP backend(new Backend(20,20));
+    size_t before = backend->sizeImp();
+    bool ok = true;
+    Imp i1(1,0x0100,impOne); 
+    Imp i2(2,0xF000,impOne); 
+    Imp i3(2,0xFF00,impOne); 
+    Imp i4(1,0x0000,impOne); 
+    Imp i5(2,0x0000,impOne); 
+    Imp i6(2,0x0000,impOne); 
+    std::bitset<8> p(std::rand());
+    i4.setPos(p);
+    p = std::rand();
+    i5.setNeg(p);
+    p = std::rand();
+    i6.setPos(p);
+    ImpP iP1 = backend->add(i1);
+    ImpP iP2 = backend->add(i2);
+    ImpP iP3 = backend->add(i3);
+    ImpP iP4 = backend->add(i4);
+    ImpP iP5 = backend->add(i5);
+    ImpP iP6 = backend->add(i6);
+    ImpReturn iP7 = impUnion(iP5,iP6,backend);
+    if (iP7.first == SAT ) {
+        impUnion(iP7.second,iP5,backend);
+    }
+    backend->debug();
+    return ok;
+}
+
 void testImp() {
-    std::cout << "testImp 1: " << testImp1() << std::endl;
-    std::cout << "testImp 2: " << testImp2() << std::endl;
-    std::cout << "testImp 3: " << testImp3() << std::endl;
-    std::cout << "testImp 4: " << testImp4() << std::endl;
-    std::cout << "testImp 5: " << testImp5() << std::endl;
-    std::cout << "testImp 6: " << testImp6() << std::endl;
-    std::cout << "testImp 7: " << testImp7() << std::endl;
-    std::cout << "testImp 8: " << testImp8() << std::endl;
-    std::cout << "testImp 9: " << testImp9() << std::endl;
-    std::cout << "testImp 10: " << testImp10() << std::endl;
+    //std::cout << "testImp 1: " << testImp1() << std::endl;
+    //std::cout << "testImp 2: " << testImp2() << std::endl;
+    //std::cout << "testImp 3: " << testImp3() << std::endl;
+    //std::cout << "testImp 4: " << testImp4() << std::endl;
+    //std::cout << "testImp 5: " << testImp5() << std::endl;
+    //std::cout << "testImp 6: " << testImp6() << std::endl;
+    //std::cout << "testImp 7: " << testImp7() << std::endl;
+    //std::cout << "testImp 8: " << testImp8() << std::endl;
+    //std::cout << "testImp 9: " << testImp9() << std::endl;
+    //std::cout << "testImp 10: " << testImp10() << std::endl;
+    //std::cout << "testImp 11: " << testImp11() << std::endl;
+    std::cout << "testImp 12: " << testImp12() << std::endl;
 }
 
 
