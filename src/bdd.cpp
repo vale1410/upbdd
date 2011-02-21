@@ -100,11 +100,6 @@ class Imp {
         oss << getNeg();
         return oss.str();
     }
-     /*
-    BddP apply(BddP bdd) {
-                    
-    }
-    */
 };
 
 
@@ -119,7 +114,6 @@ class UpBdd {
     bool operator==(const UpBdd &other) const {
         return _bddP == other._bddP && _impP == other._impP;
     }
-
 
     BddP _bddP;
     ImpP _impP;
@@ -146,7 +140,7 @@ class Bdd {
     
     std::string toString() const {
         std::ostringstream oss;
-        // << this << " = " << "(" << _level <<  ",<" << _high._impP <<  "," << _low._bddP <<  ">,<" << _low._impP <<  "," << _low._bddP <<  ">)";
+        oss << this << " = " << "(" << _level <<  ",<" << _high._impP <<  "," << _high._bddP <<  ">,<" << _low._impP <<  "," << _low._bddP <<  ">)";
         return oss.str();
     }
 };
@@ -206,13 +200,13 @@ class ImpEqual : std::equal_to< Imp > {
         }
 };
 
-void printImp(const Imp* imp)
+void printImp(const ImpP imp)
 {
     ImpHashFunction hasher;
     std::cout << "imp: " << imp->toString() << "\t hash: " << hasher(*imp) << std::endl;
 }
 
-void printBdd(const Bdd* bdd)
+void printBdd(const BddP bdd)
 {
     BddHashFunction hasher;
     std::cout << "bdd: " << bdd->toString() << "\t hash: " << hasher(*bdd) << std::endl;
@@ -220,67 +214,6 @@ void printBdd(const Bdd* bdd)
 
 typedef boost::unordered_map< Bdd, BddP, BddHashFunction, BddEqual > BddStoreT;
 typedef boost::unordered_map< Imp, ImpP, ImpHashFunction, ImpEqual > ImpStoreT;
-
-
-class IntersectResult {
-    public: 
-        
-        ImpP _upP;
-        ImpP _highP;
-        ImpP _lowP;
-};
-
-
-class BddStore {
-    public: 
-
-        BddStore(unsigned long size):
-             store(size)
-        {
-            BddP bOne = new Bdd(1,bddOne,bddOne,impOne,impOne);
-            store[*bOne] = bddOne;
-        }
-
-        bool lookup(const Bdd bdd) const {
-            return store.find(bdd) != store.end();
-        }  
-
-        
-        UpBdd add(const Bdd bdd)  {
-            UpBdd high = bdd._high;
-            UpBdd low = bdd._low;
-            UpBdd result(impOne,bddOne);
-            /*
-            if (high == low) {
-                return high;
-            }
-
-            IntersectResult intersection = intersection(high._impP,low._impP);
-            high._impP = intersection._highP;
-            low._impP = intersection._lowP;
-            //Bdd resBdd(
-            BddStoreT::iterator i = store.find(bdd);
-            if (i != store.end() ) {
-                result = UpBdd(impOne,i->second);
-            } else if(bdd._high == bdd._low && bdd._hImp == bdd._lImp) {
-                result = new Bdd(bdd); // memory unsafe!
-                store[bdd]=result;
-            }*/
-            return result;
-        }
-        
-        void debug() const {
-            BOOST_FOREACH(const BddStoreT::value_type& i , store) {
-                if (i.second != bddOne) printBdd(i.second);
-            };
-        }
-        
-        size_t size() {
-            return store.size();
-        }
-    private:
-        BddStoreT store;
-};
 
 class ImpStore {
     public: 
@@ -292,8 +225,8 @@ class ImpStore {
             store[*iOne] = impOne;
         }
 
-        bool lookup(const Imp bdd) const {
-            return store.find(bdd) != store.end();
+        bool lookup(const Imp imp) const {
+            return store.find(imp) != store.end();
         }  
 
         ImpP add(const Imp imp) {
@@ -323,9 +256,149 @@ class ImpStore {
             return store.size();
         }
 
+        // a - b = a XOR impIntersection(a,b)
+        ImpP impSubtraction(ImpP a, ImpP b) {
+            if (a == impOne) {
+                return impOne;
+            } else if (b == impOne ) {
+                return a;
+            } else if (a->_level == b->_level) {
+                Imp imp = Imp(1,0x0000,impOne);
+                imp._level = a->_level;
+                imp.setPos(a->getPos() ^ (a->getPos() & b->getPos()));
+                imp.setNeg(a->getNeg() ^ (a->getNeg() & b->getNeg()));
+                imp._nextP = impIntersection(a->_nextP,b->_nextP);
+                return add(imp);
+            } else if (a->_level < b->_level) {
+                return impSubtraction(a,b->_nextP);
+            } else {
+                return impSubtraction(a->_nextP,b);
+            }
+        }
+        
+        ImpP impIntersection(ImpP a, ImpP b) {
+            if (a == impOne || b == impOne ) {
+                return impOne;
+            } else if (a->_level == b->_level) {
+                Imp imp = Imp(1,0x0000,impOne);
+                imp._level = a->_level;
+                imp.setPos(a->getPos() & b->getPos());
+                imp.setNeg(a->getNeg() & b->getNeg());
+                imp._nextP = impIntersection(a->_nextP,b->_nextP);
+                return add(imp);
+            } else if (a->_level < b->_level) {
+                return impIntersection(a,b->_nextP);
+            } else {
+                return impIntersection(a->_nextP,b);
+            }
+        }
+        
+        
+        ImpReturn impUnion(ImpP a, ImpP b) {
+            ImpReturn result;
+            if (a == impOne) {
+                result.first = SAT;
+                result.second = b;
+                return result;
+            }
+            else if (b == impOne) {
+                result.first = SAT;
+                result.second = a;
+                return result;
+            }
+
+            Imp imp(0,0x0000,NULL);
+            ImpP nextA;
+            ImpP nextB; 
+            
+            if (a->_level == b->_level) {
+                imp._level = a->_level;
+                imp.setPos(a->getPos() | b->getPos());
+                imp.setNeg(a->getNeg() | b->getNeg());
+                if(imp.getPos().to_ulong() & imp.getNeg().to_ulong()) {
+                    result.first = UNSAT;
+                    return result;
+                } else {
+                    nextA = a->_nextP;
+                    nextB = b->_nextP;
+                }
+            } else if (a->_level < b->_level) {
+                nextA = a;
+                nextB = b->_nextP;
+                imp._level = b->_level;
+                imp._imp = b->_imp;
+            } else {
+                nextA = a->_nextP;
+                nextB = b;
+                imp._level = a->_level;
+                imp._imp = a->_imp; 
+            }
+            
+            ImpReturn recursion = impUnion(nextA,nextB);
+        
+            if (recursion.first == UNSAT) {
+                return recursion;
+            } else {
+                result.first = SAT;
+                imp._nextP = recursion.second;
+                result.second = add(imp);
+                return result;
+            }
+            return result;
+        }
+
     private:
         ImpStoreT store;
 };
+
+class BddStore {
+    public: 
+
+        BddStore(unsigned long size):
+             store(size)
+        {
+            BddP bOne = new Bdd(1,bddOne,bddOne,impOne,impOne);
+            store[*bOne] = bddOne;
+        }
+
+        bool lookup(const Bdd bdd) const {
+            return store.find(bdd) != store.end();
+        }  
+        
+        UpBdd add(const Bdd bdd, ImpStore& impStore)  {
+            UpBdd high = bdd._high;
+            UpBdd low = bdd._low;
+            if (high == low) {
+                return high;
+            }
+            UpBdd result(impOne,bddOne);
+            result._impP = impStore.impIntersection(high._impP,low._impP);
+            high._impP = impStore.impSubtraction(high._impP,result._impP);
+            low._impP = impStore.impSubtraction(low._impP,result._impP); 
+            Bdd resBdd(bdd._level,high,low);
+            BddStoreT::iterator i = store.find(resBdd);
+            if (i != store.end() ) {
+                result._bddP = i->second;
+            } else {
+                result._bddP = new Bdd(resBdd); 
+                store[resBdd] = result._bddP;
+            }
+            return result;
+        }
+        
+        void debug() const {
+            BOOST_FOREACH(const BddStoreT::value_type& i , store) {
+                if (i.second != bddOne) printBdd(i.second);
+            };
+        }
+        
+        size_t size() {
+            return store.size();
+        }
+    private:
+        BddStoreT store;
+};
+
 
 class Backend {
 
@@ -340,20 +413,24 @@ class Backend {
         {
         }
 
-        inline bool lookup(const Bdd bdd) const {
-            return bddStore.lookup(bdd);
+        UpBdd add(const Bdd bdd) {
+            return bddStore.add(bdd,impStore); 
         }
 
-        inline BddP add(const Bdd bdd) {
-            return bddStore.add(bdd)._bddP; // TODO correct
-        }
-
-        inline bool lookup(const Imp imp) const {
-            return impStore.lookup(imp);
-        }
-
-        inline ImpP add(const Imp imp) {
+        ImpP add(const Imp imp) {
             return impStore.add(imp);
+        }
+
+        ImpReturn impUnion(ImpP a, ImpP b) {
+            return impStore.impUnion(a,b);
+        }
+
+        ImpP impIntersection(ImpP a, ImpP b) {
+            return impStore.impIntersection(a,b);
+        }
+
+        ImpP impSubtraction(ImpP a, ImpP b) {
+            return impStore.impSubtraction(a,b);
         }
 
         void debug() {
@@ -374,110 +451,6 @@ class Backend {
         ImpStore impStore;
         //BddAndStore bddAndStore;  // cache for andBdd
 };
-
-// a - b = a XOR impIntersection(a,b)
-ImpP impSubtraction(ImpP a, ImpP b, Backend::SP backend) {
-    ImpP nextA;
-    ImpP nextB;
-    Imp imp = Imp(a->_level,0x0000,impOne);
-    if (a->_level == b->_level) {
-        imp.setPos(a->getPos() ^ (a->getPos() & b->getPos()));
-        imp.setNeg(a->getNeg() ^ (a->getNeg() & b->getNeg()));
-        nextA = a->_nextP;
-        nextB = b->_nextP;
-    } else if (a->_level < b->_level) {
-        nextA = a;
-        nextB = b->_nextP;
-    } else {
-        nextA = a->_nextP;
-        nextB = b;
-    }
-
-    if (nextB == impOne) {
-        imp._nextP = nextA;
-    } else if (nextA == impOne) {
-        imp._nextP = impOne;
-    } else {
-        imp._nextP = impSubtraction(nextA,nextB,backend); 
-    }
-    return backend->add(imp);
-}
-
-ImpP impIntersection(ImpP a, ImpP b, Backend::SP backend) {
-    Imp imp = Imp(1,0x0000,impOne);
-    ImpP nextA;
-    ImpP nextB;
-    if (a->_level == b->_level) {
-        imp._level = a->_level;
-        imp.setPos(a->getPos() & b->getPos());
-        imp.setNeg(a->getNeg() & b->getNeg());
-        nextA = a->_nextP;
-        nextB = b->_nextP;
-    } else if (a->_level < b->_level) {
-        nextA = a;
-        nextB = b->_nextP;
-    } else {
-        nextA = a->_nextP;
-        nextB = b;
-    }
-    
-    if (nextA != impOne && nextB != impOne) {
-        imp._nextP = impIntersection(nextA,nextB,backend);
-    }
-    return backend->add(imp);
-}
-
-
-ImpReturn impUnion(ImpP a, ImpP b, Backend::SP backend) {
-    ImpReturn result;
-    Imp imp(0,0x0000,NULL);
-    ImpP nextA;
-    ImpP nextB;
-    ImpReturn recursion;
-    if (a->_level == b->_level) {
-        imp._level = a->_level;
-        imp.setPos(a->getPos() | b->getPos());
-        imp.setNeg(a->getNeg() | b->getNeg());
-        if(imp.getPos().to_ulong() & imp.getNeg().to_ulong()) {
-            result.first = UNSAT;
-            return result;
-        } else {
-            nextA = a->_nextP;
-            nextB = b->_nextP;
-        }
-    } else if (a->_level < b->_level) {
-        nextA = a;
-        nextB = b->_nextP;
-        imp._level = b->_level;
-        imp._imp = b->_imp;
-    } else {
-        nextA = a->_nextP;
-        nextB = b;
-        imp._level = a->_level;
-        imp._imp = a->_imp; 
-    }
-    
-    if (nextA == impOne) {
-        recursion.first = SAT;
-        recursion.second = nextB;
-    }
-    else if (nextB == impOne) {
-        recursion.first = SAT;
-        recursion.second = nextA;
-    } else {
-        recursion = impUnion(nextA,nextB,backend);
-    }
-
-    if (recursion.first == UNSAT) {
-        return recursion;
-    } else {
-        result.first = SAT;
-        imp._nextP = recursion.second;
-        result.second = backend->add(imp);
-        return result;
-    }
-    return result;
-}
 
 
 /* TODO: finish bddAnd
@@ -533,11 +506,11 @@ void testHashFunction();
 int main () 
 {
     //testSizes();
-    testImp();
-    //testBdd();
+    //testImp();
+    testBdd();
     //testHashFunction();
 } 
-/*
+
 bool testBdd1() {
     Backend::SP backend(new Backend(20,20));
     size_t before = backend->sizeBdd();
@@ -546,11 +519,14 @@ bool testBdd1() {
     ImpP iP1 = backend->add(i1);
     ImpP iP2 = backend->add(i2);
     Bdd bdd1(2,bddOne,bddOne,iP1,iP2); // 2 -> 1 ; -1
-    Bdd bdd2(2,bddOne,bddOne,iP1,iP2); // 2 -> 1 ; -1
+    Bdd bdd2(3,bddOne,bddOne,iP1,iP2); // 3 -> 1 ; -1
     backend->add(bdd1);
     backend->add(bdd2);
-    return before + 1 == backend->sizeBdd();
+    backend->debug();
+    return before + 2 == backend->sizeBdd();
 }
+
+/*
 
 bool testBdd2() {
     Backend::SP backend(new Backend(20,20));
@@ -568,7 +544,7 @@ bool testBdd2() {
 */
 
 void testBdd() {
-    //std::cout << "testBdd 1: " << testBdd1() << std::endl;
+    std::cout << "testBdd 1: " << testBdd1() << std::endl;
     //std::cout << "testBdd 2: " << testBdd2() << std::endl;
     //std::cout << "testBdd 3: " << testBdd3() << std::endl;
     //std::cout << "testBdd 4: " << testBdd4() << std::endl;
@@ -619,7 +595,7 @@ bool testImp4() {
     Imp i3(1,0x0110,impOne); // 1
     ImpP iP1 = backend->add(i1);
     ImpP iP2 = backend->add(i2);
-    ImpReturn result = impUnion(iP1,iP2,backend);
+    ImpReturn result = backend->impUnion(iP1,iP2);
     ok = result.first == SAT;
     ok = ok && result.second->_imp == i3._imp;
     ok = ok && before + 3 == backend->sizeImp();
@@ -635,7 +611,7 @@ bool testImp5() {
     Imp i2(1,0x0001,impOne); // 1
     ImpP iP1 = backend->add(i1);
     ImpP iP2 = backend->add(i2);
-    ImpReturn result = impUnion(iP1,iP2,backend);
+    ImpReturn result = backend->impUnion(iP1,iP2);
     ok = result.first == UNSAT;
     ok = ok && before + 2 == backend->sizeImp();
     return ok;
@@ -650,7 +626,7 @@ bool testImp6() {
     Imp i2(2,0x0001,impOne); // 1
     ImpP iP1 = backend->add(i1);
     ImpP iP2 = backend->add(i2);
-    ImpReturn result = impUnion(iP1,iP2,backend);
+    ImpReturn result = backend->impUnion(iP1,iP2);
     ok = result.first == SAT;
     ok = ok && before + 3 == backend->sizeImp();
     //backend->debug();
@@ -666,7 +642,7 @@ bool testImp7() {
     Imp i2(2,0x0001,impOne); // 1
     ImpP iP1 = backend->add(i1);
     ImpP iP2 = backend->add(i2);
-    ImpReturn result = impUnion(iP2,iP1,backend);
+    ImpReturn result = backend->impUnion(iP2,iP1);
     ok = result.first == SAT;
     ok = ok && before + 3 == backend->sizeImp();
     //backend->debug();
@@ -683,9 +659,9 @@ bool testImp8() {
     ImpP iP1 = backend->add(i1);
     ImpP iP2 = backend->add(i2);
     ImpP iP3 = backend->add(i3);
-    ImpReturn result = impUnion(iP1,iP2,backend);
+    ImpReturn result = backend->impUnion(iP1,iP2);
     ImpP iP4 = result.second;
-    result = impUnion(iP4,iP3,backend);
+    result = backend->impUnion(iP4,iP3);
     Imp i5(2,0xF00F,iP1);
     ImpP iP5 = backend->add(i5);
     ok = result.second == iP5;
@@ -703,7 +679,7 @@ bool testImp9() {
     Imp i3(1,0xF000,impOne); // 1
     ImpP iP1 = backend->add(i1);
     ImpP iP2 = backend->add(i2);
-    ImpP iP4 = impIntersection(iP1,iP2,backend);
+    ImpP iP4 = backend->impIntersection(iP1,iP2);
     ok = iP4->_imp == i3._imp;
     ok = ok && before + 3 == backend->sizeImp();
     //backend->debug();
@@ -720,9 +696,9 @@ bool testImp10() {
     ImpP iP1 = backend->add(i1);
     ImpP iP2 = backend->add(i2);
     ImpP iP3 = backend->add(i3);
-    ImpReturn result = impUnion(iP1,iP2,backend);
+    ImpReturn result = backend->impUnion(iP1,iP2);
     ImpP iP4 = result.second;
-    ImpP iP5 = impIntersection(iP3,iP4,backend);
+    ImpP iP5 = backend->impIntersection(iP3,iP4);
     ok = iP2 == iP5;
     ok = ok && before + 4 == backend->sizeImp();
     //backend->debug();
@@ -731,7 +707,7 @@ bool testImp10() {
 
 bool testImp11() {
     Backend::SP backend(new Backend(20,20));
-    size_t before = backend->sizeImp();
+    //size_t before = backend->sizeImp();
     bool ok = true;
     Imp i1(1,0x0100,impOne); // 1
     Imp i2(2,0xF000,impOne); // 1
@@ -739,10 +715,11 @@ bool testImp11() {
     ImpP iP1 = backend->add(i1);
     ImpP iP2 = backend->add(i2);
     ImpP iP3 = backend->add(i3);
-    ImpReturn result = impUnion(iP1,iP2,backend);
+    ImpReturn result = backend->impUnion(iP1,iP2);
     ImpP iP4 = result.second;
-    ImpP iP5 = impSubtraction(iP3,iP4,backend);
-    ImpP iP6 = impSubtraction(iP4,iP3,backend);
+    ImpP iP5 = backend->impSubtraction(iP3,iP4);
+    ImpP iP6 = backend->impSubtraction(iP4,iP3);
+    backend->impUnion(iP5,iP6);
     ok = ok;// & iP5 && iP6 && before;
     backend->debug();
     return ok;
@@ -750,7 +727,7 @@ bool testImp11() {
 
 bool testImp12() {
     Backend::SP backend(new Backend(20,20));
-    size_t before = backend->sizeImp();
+    //size_t before = backend->sizeImp();
     bool ok = true;
     Imp i1(1,0x0100,impOne); 
     Imp i2(2,0xF000,impOne); 
@@ -770,41 +747,44 @@ bool testImp12() {
     ImpP iP4 = backend->add(i4);
     ImpP iP5 = backend->add(i5);
     ImpP iP6 = backend->add(i6);
-    ImpReturn iP7 = impUnion(iP5,iP6,backend);
+    ImpReturn iP7 = backend->impUnion(iP5,iP6);
+    backend->impIntersection(iP1,iP2);
+    backend->impSubtraction(iP3,iP4);
+    
     if (iP7.first == SAT ) {
-        impUnion(iP7.second,iP5,backend);
+        backend->impUnion(iP7.second,iP5);
     }
     backend->debug();
     return ok;
 }
 
 void testImp() {
-    //std::cout << "testImp 1: " << testImp1() << std::endl;
-    //std::cout << "testImp 2: " << testImp2() << std::endl;
-    //std::cout << "testImp 3: " << testImp3() << std::endl;
-    //std::cout << "testImp 4: " << testImp4() << std::endl;
-    //std::cout << "testImp 5: " << testImp5() << std::endl;
-    //std::cout << "testImp 6: " << testImp6() << std::endl;
-    //std::cout << "testImp 7: " << testImp7() << std::endl;
-    //std::cout << "testImp 8: " << testImp8() << std::endl;
-    //std::cout << "testImp 9: " << testImp9() << std::endl;
-    //std::cout << "testImp 10: " << testImp10() << std::endl;
-    //std::cout << "testImp 11: " << testImp11() << std::endl;
+    std::cout << "testImp 1: " << testImp1() << std::endl;
+    std::cout << "testImp 2: " << testImp2() << std::endl;
+    std::cout << "testImp 3: " << testImp3() << std::endl;
+    std::cout << "testImp 4: " << testImp4() << std::endl;
+    std::cout << "testImp 5: " << testImp5() << std::endl;
+    std::cout << "testImp 6: " << testImp6() << std::endl;
+    std::cout << "testImp 7: " << testImp7() << std::endl;
+    std::cout << "testImp 8: " << testImp8() << std::endl;
+    std::cout << "testImp 9: " << testImp9() << std::endl;
+    std::cout << "testImp 10: " << testImp10() << std::endl;
+    std::cout << "testImp 11: " << testImp11() << std::endl;
     std::cout << "testImp 12: " << testImp12() << std::endl;
 }
-
-
 
 void testSizes() {
     Level level = 123;
     std::bitset<16> bits = 0xF00F;
     Imp imp(level,bits,impOne);
-    const Bdd bdd(level,bddOne,bddOne,impOne,&imp);
+    Bdd bdd(level,bddOne,bddOne,impOne,&imp);
+    const UpBdd upbdd(&imp,&bdd);
     int a;
     long b=1234123;
     size_t c;
     std::cout << "size of imp " << sizeof(imp) << std::endl;
     std::cout << "size of bdd " << sizeof(bdd) << std::endl;
+    std::cout << "size of upbdd " << sizeof(upbdd) << std::endl;
     std::cout << "size of imp.imp " << sizeof(imp._imp) << std::endl;
     std::cout << "size of int " << sizeof(a) << std::endl;
     std::cout << "size of long " << sizeof(b) << std::endl;

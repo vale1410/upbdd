@@ -1,7 +1,9 @@
 next days: 
-[] plane: impSubtraction. for that you can check if not exists already for bitest
-[] first day: bddAnd ... (simple,with rest)
-[] second day: finish bddAnd, test suite
+[done] plane: impSubtraction. for that you can check if not exists already for bitest
+[done] first day: add(Bdd) finished
+[] : test add(Bdd)
+[] : bddAnd ... (simple,with rest)
+[] : finish bddAnd, test suite
 
 unordered: 
 * split into several files: imp, upbdd, backend, test, inout, 
