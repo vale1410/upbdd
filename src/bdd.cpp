@@ -22,8 +22,8 @@ typedef Bdd* BddP;
 typedef std::pair<Feedback,ImpP> ImpReturn;
 typedef std::pair<Feedback,UpBdd> BddReturn;
 
-Bdd* bddOne = NULL;
-Imp* impOne = NULL;
+BddP bddOne = NULL;
+ImpP impOne = NULL;
 
 class Imp {
     public:
@@ -263,11 +263,10 @@ class ImpStore {
             } else if (b == impOne ) {
                 return a;
             } else if (a->_level == b->_level) {
-                Imp imp = Imp(1,0x0000,impOne);
-                imp._level = a->_level;
+                Imp imp = Imp(a->_level,0x0000,impOne);
                 imp.setPos(a->getPos() ^ (a->getPos() & b->getPos()));
                 imp.setNeg(a->getNeg() ^ (a->getNeg() & b->getNeg()));
-                imp._nextP = impIntersection(a->_nextP,b->_nextP);
+                imp._nextP = impSubtraction(a->_nextP,b->_nextP);
                 return add(imp);
             } else if (a->_level < b->_level) {
                 return impSubtraction(a,b->_nextP);
@@ -337,12 +336,11 @@ class ImpStore {
             ImpReturn recursion = impUnion(nextA,nextB);
         
             if (recursion.first == UNSAT) {
-                return recursion;
+                result = recursion;
             } else {
                 result.first = SAT;
                 imp._nextP = recursion.second;
                 result.second = add(imp);
-                return result;
             }
             return result;
         }
@@ -514,16 +512,17 @@ int main ()
 bool testBdd1() {
     Backend::SP backend(new Backend(20,20));
     size_t before = backend->sizeBdd();
-    Imp i1(1,0x0100,impOne); // 1
-    Imp i2(1,0x0001,impOne); // -1
+    Imp i1(1,0x0100,impOne); 
+    Imp i2(1,0x0FF0,impOne); 
     ImpP iP1 = backend->add(i1);
     ImpP iP2 = backend->add(i2);
-    Bdd bdd1(2,bddOne,bddOne,iP1,iP2); // 2 -> 1 ; -1
-    Bdd bdd2(3,bddOne,bddOne,iP1,iP2); // 3 -> 1 ; -1
-    backend->add(bdd1);
-    backend->add(bdd2);
+    Bdd bdd1(2,bddOne,bddOne,iP1,iP1); 
+    Bdd bdd2(3,bddOne,bddOne,iP1,iP2); 
+    UpBdd upbdd1 = backend->add(bdd1);
+    UpBdd upbdd2 = backend->add(bdd2);
     backend->debug();
-    return before + 2 == backend->sizeBdd();
+    bool ok = upbdd1._bddP == bddOne && upbdd1._impP == iP1;
+    return ok && before + 1 == backend->sizeBdd();
 }
 
 /*
