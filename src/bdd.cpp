@@ -292,7 +292,7 @@ class ImpStore {
             }
         }
         
-        
+
         ImpReturn impUnion(ImpP a, ImpP b) {
             ImpReturn result;
             if (a == impOne) {
@@ -341,6 +341,14 @@ class ImpStore {
                 result.first = SAT;
                 imp._nextP = recursion.second;
                 result.second = add(imp);
+            }
+            return result;
+        }
+
+        ImpReturn impUnion(ImpP a, ImpP b, ImpP c) {
+            ImpReturn result = impUnion(a,b);
+            if (result.first == SAT) {
+                result = impUnion(result.second,c);
             }
             return result;
         }
@@ -451,32 +459,68 @@ class Backend {
 };
 
 
-/* TODO: finish bddAnd
-BddReturn bddAnd(UpBdd a, UpBdd b, ImpP imp, Backend::SP backend) {
+BddReturn bddAnd(UpBdd a, UpBdd b, ImpP impP, Backend::SP backend) {
     BddReturn result;
-    ImpReturn impR = andImp(imp,a.first,b.first);
+    ImpReturn impR = impUnion(a._impP,b._impP,impP);
+
     if (impR.first == UNSAT) {
         result.first = UNSAT;
-        return result; 
     } else {
-        imp = impR.second;
-        UpBdd aa = imp->apply(a.second);
-        aa.first = impOne;
-        UpBdd bb = imp->apply(b.second);
-        bb.first = impOne;
-        if (a.second != aa.second || b.second != bb.second) {
-            return bddAnd(aa,bb,imp,backend);
-        }
+        ImpP impP = impR.second;
+        const BddP bddAP = a._bddP;
+        const BddP bddBP = b._bddP;
+        if (bddAP == bddOne && bddBP == bddOne ){
+            result.first = SAT;
+            result.second = UpBdd(impP,bddOne);        
+        } else {
+            const Level level = maxLevel(bddAP,bddBP);
+            adjustLevel(impP,level); // might change impP
 
-        if (a->_level == b->_level) {
-            BddReturn hReturn = bddAnd(aa.second->getUpBddHigh(),bb.second->getUpBddHigh());    
-
-            BddReturn lReturn = bddAnd(aa.second->getUpBddLow(),bb.second->getUpBddLow());    
+            if (impliedLevel(impP,level) ) { // does the impP imply this level?
+                return bddAPndCall(bddAP,bddBP,impP->getPos(level),impP,backend);
+            } else {
+                BddReturn highReturn = bddAPndCall(bddAP,bddBP,true,impP,backend);
+                BddReturn lowReturn  = bddAPndCall(bddAP,bddBP,false,impP,backend);
+                if (highReturn.first == SAT && lowReturn.first == SAT) {
+                    result.first = SAT;
+                    Bdd bdd(level, highReturn.second, lowReturn.second);
+                    result.second = add(bdd);
+                } else if (highReturn.first == UNSAT && lowReturn.first == UNSAT) {
+                    result.first = UNSAT;
+                } else if (highReturn.first == SAT && lowReturn.first == UNSAT) {
+                    highReturn.second._impP->set(level,true); // todo!
+                    result = highReturn;
+                } else if (highReturn.first == UNSAT && lowReturn.first == SAT) {
+                    lowReturn.second._impP->set(level,false); // todo!
+                    result = lowReturn;
+                }  
+            }
         }
-        return result;
+    }    
+    return result;
 }
-*/
 
+BddReturn bddAndCall(Bdd& a, Bdd& b, ImpP impP, bool direction, Backend::SP backend) {
+    if (a._level == b._level) {
+        if (direction) {
+            bddAnd(a._high, b._high, impP, backend);
+        } else {
+            bddAnd(a._low, b._low, impP, backend);
+        }
+    } else if (a._level > b._level) {
+        if (direction) {
+            bddAnd(a._high, b, impP, backend);
+        } else {
+            bddAnd(a._low, b, impP, backend);
+        }
+    } else {
+        if (direction) {
+            bddAnd(a, b._high, impP, backend);
+        } else {
+            bddAnd(a, b._low, impP, backend);
+        }
+    }
+}
 
 void testSetup() {
     Backend::SP backend(new Backend(20,20));
@@ -525,8 +569,6 @@ bool testBdd1() {
     return ok && before + 1 == backend->sizeBdd();
 }
 
-/*
-
 bool testBdd2() {
     Backend::SP backend(new Backend(20,20));
     size_t before = backend->sizeBdd();
@@ -536,15 +578,18 @@ bool testBdd2() {
     ImpP iP2 = backend->add(i2);
     Bdd bdd1(2,bddOne,bddOne,iP1,iP2); // 2 -> 1 ; -1
     Bdd bdd2(2,bddOne,bddOne,iP2,iP1); // 2 -> -1 ; 1
-    backend->add(bdd1);
-    backend->add(bdd2);
-    return before + 2 == backend->sizeBdd();
+    UpBdd upBdd1 = backend->add(bdd1);
+    UpBdd upBdd2 = backend->add(bdd2);
+    Bdd bdd3(3,upBdd1,upBdd2); // 3 -> bdd1 ; bdd2
+    backend->add(bdd3);
+    backend->debug();
+    return before + 3 == backend->sizeBdd();
 }
-*/
+
 
 void testBdd() {
-    std::cout << "testBdd 1: " << testBdd1() << std::endl;
-    //std::cout << "testBdd 2: " << testBdd2() << std::endl;
+    //std::cout << "testBdd 1: " << testBdd1() << std::endl;
+    std::cout << "testBdd 2: " << testBdd2() << std::endl;
     //std::cout << "testBdd 3: " << testBdd3() << std::endl;
     //std::cout << "testBdd 4: " << testBdd4() << std::endl;
     //std::cout << "testBdd 5: " << testBdd5() << std::endl;
