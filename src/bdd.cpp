@@ -431,6 +431,10 @@ class Backend {
             return impStore.impUnion(a,b);
         }
 
+        ImpReturn impUnion(ImpP a, ImpP b, ImpP c) {
+            return impStore.impUnion(a,b,c);
+        }
+
         ImpP impIntersection(ImpP a, ImpP b) {
             return impStore.impIntersection(a,b);
         }
@@ -452,35 +456,48 @@ class Backend {
             return bddStore.size();
         }
 
-    private:
-        BddStore bddStore;
-        ImpStore impStore;
-        //BddAndStore bddAndStore;  // cache for andBdd
-};
+        //TODO: not implemented yet exception
+bool impliedLevel(ImpP imp, Level level) {
+    return false;
+}
+
+        //TODO: not implemented yet exception
+ImpP adjustLevel(ImpP imp, Level level) {
+    return imp;
+}
+
+        //TODO: not implemented yet exception
+Level maxLevel(BddP a,BddP b) {
+    if (a->_level > b->_level) {
+        return a->_level;
+    } else {
+        return b->_level;
+    }    
+} 
 
 
-BddReturn bddAnd(UpBdd a, UpBdd b, ImpP impP, Backend::SP backend) {
-    BddReturn result;
+BddReturn bddAnd(UpBdd a, UpBdd b, ImpP impP) {
+    BddReturn result(SAT,UpBdd(impOne,bddOne));
     ImpReturn impR = impUnion(a._impP,b._impP,impP);
 
     if (impR.first == UNSAT) {
         result.first = UNSAT;
     } else {
         ImpP impP = impR.second;
-        const BddP bddAP = a._bddP;
-        const BddP bddBP = b._bddP;
-        if (bddAP == bddOne && bddBP == bddOne ){
+        const BddP bddPa = a._bddP;
+        const BddP bddPb = b._bddP;
+        if (bddPa == bddOne && bddPb == bddOne ){
             result.first = SAT;
             result.second = UpBdd(impP,bddOne);        
         } else {
-            const Level level = maxLevel(bddAP,bddBP);
+            const Level level = maxLevel(bddPa,bddPb);
             adjustLevel(impP,level); // might change impP
 
             if (impliedLevel(impP,level) ) { // does the impP imply this level?
-                return bddAPndCall(bddAP,bddBP,impP->getPos(level),impP,backend);
+                return bddAndCall(bddPa,bddPb,impP,impP->getPos(level));
             } else {
-                BddReturn highReturn = bddAPndCall(bddAP,bddBP,true,impP,backend);
-                BddReturn lowReturn  = bddAPndCall(bddAP,bddBP,false,impP,backend);
+                BddReturn highReturn = bddAndCall(bddPa,bddPb,impP,true);
+                BddReturn lowReturn  = bddAndCall(bddPa,bddPb,impP,false);
                 if (highReturn.first == SAT && lowReturn.first == SAT) {
                     result.first = SAT;
                     Bdd bdd(level, highReturn.second, lowReturn.second);
@@ -488,10 +505,12 @@ BddReturn bddAnd(UpBdd a, UpBdd b, ImpP impP, Backend::SP backend) {
                 } else if (highReturn.first == UNSAT && lowReturn.first == UNSAT) {
                     result.first = UNSAT;
                 } else if (highReturn.first == SAT && lowReturn.first == UNSAT) {
-                    highReturn.second._impP->set(level,true); // todo!
+                    //allocate a new imp
+                    highReturn.second._impP->setPos(level,true); // todo!
                     result = highReturn;
                 } else if (highReturn.first == UNSAT && lowReturn.first == SAT) {
-                    lowReturn.second._impP->set(level,false); // todo!
+                    //allocate a new imp
+                    lowReturn.second._impP->setNeg(level,true); // todo!
                     result = lowReturn;
                 }  
             }
@@ -500,27 +519,37 @@ BddReturn bddAnd(UpBdd a, UpBdd b, ImpP impP, Backend::SP backend) {
     return result;
 }
 
-BddReturn bddAndCall(Bdd& a, Bdd& b, ImpP impP, bool direction, Backend::SP backend) {
-    if (a._level == b._level) {
+BddReturn bddAndCall(const BddP a, const BddP b, const ImpP impP, const bool direction) {
+    UpBdd aUpBdd(impOne,a);
+    UpBdd bUpBdd(impOne,b);
+    if (a->_level == b->_level) {
         if (direction) {
-            bddAnd(a._high, b._high, impP, backend);
+            return bddAnd(a->_high, b->_high, impP);
         } else {
-            bddAnd(a._low, b._low, impP, backend);
+            return bddAnd(a->_low, b->_low, impP);
         }
-    } else if (a._level > b._level) {
+    } else if (a->_level > b->_level) {
         if (direction) {
-            bddAnd(a._high, b, impP, backend);
+            return bddAnd(a->_high, bUpBdd, impP);
         } else {
-            bddAnd(a._low, b, impP, backend);
+            return bddAnd(a->_low, bUpBdd, impP);
         }
     } else {
         if (direction) {
-            bddAnd(a, b._high, impP, backend);
+            return bddAnd(aUpBdd, b->_high, impP);
         } else {
-            bddAnd(a, b._low, impP, backend);
+            return bddAnd(aUpBdd, b->_low, impP);
         }
     }
 }
+
+    private:
+        BddStore bddStore;
+        ImpStore impStore;
+        //BddAndStore bddAndStore;  // cache for andBdd
+};
+
+
 
 void testSetup() {
     Backend::SP backend(new Backend(20,20));
