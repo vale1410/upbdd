@@ -1,8 +1,4 @@
 next days: 
-[done] plane: impSubtraction. for that you can check if not exists already for bitest
-[done] first day: add(Bdd) finished
-[] : test add(Bdd)
-[] : bddAnd ... (simple,with rest)
 [] : finish bddAnd, test suite
 
 unordered: 
@@ -15,3 +11,8 @@ unordered:
 * bddAND with rest
 * conjunction of initBdds smarter: if variable all the same -> conjunct
 
+done:
+[done] plane: impSubtraction. for that you can check if not exists already for bitest
+[done] first day: add(Bdd) finished
+[done] : test add(Bdd)
+[done] : bddAnd ... (simple,with rest)

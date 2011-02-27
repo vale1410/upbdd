@@ -8,100 +8,8 @@
 #include <boost/functional/hash.hpp>
 #include <boost/foreach.hpp>
 
-class Imp;
-class Bdd;
-class UpBdd;
-class ImpHashFunction;
-class BddHashFunction;
-
-enum Feedback { SAT, UNSAT, BREAK };
-
-typedef unsigned int Level;
-typedef Imp* ImpP;
-typedef Bdd* BddP;
-typedef std::pair<Feedback,ImpP> ImpReturn;
-typedef std::pair<Feedback,UpBdd> BddReturn;
-
-BddP bddOne = NULL;
-ImpP impOne = NULL;
-
-class Imp {
-    public:
-
-
-    Imp(Level level, std::bitset<2*8> imp, ImpP next):
-        _level(level),
-        _imp(imp),
-        _nextP(next)
-    {}
-
-    Level _level;
-    std::bitset<2*8> _imp;
-    ImpP _nextP;
-    
-    std::string toString() const {
-        std::ostringstream oss;
-        oss << this << " = " << "(" << _level <<  "," << pos() <<  "," << neg() << "," << _nextP <<  ")";
-        return oss.str();
-    }
-
-    void setPos(std::bitset<8> bits) {
-        for(size_t i= 0 ; i<_imp.size()/2;i++) {
-            setPos(i,bits[7-i]);
-        }
-    }
-
-    void setNeg(std::bitset<8> bits) {
-        for(size_t i= 0 ; i<_imp.size()/2;i++) {
-            setNeg(i,bits[7-i]);
-        }
-    }
-    
-    std::bitset<8> getPos() const {
-        std::bitset<8> result;
-        for(size_t i= 0 ; i<_imp.size()/2;i++) {
-            result[7-i] = getPos(i);
-        }
-        return result;
-    }
-
-    std::bitset<8> getNeg() const {
-        std::bitset<8> result;
-        for(size_t i= 0 ; i<_imp.size()/2;i++) {
-            result[7-i] = getNeg(i);
-        }
-        return result;
-    }
-    
-    bool getPos(size_t i) const {
-        return _imp.test(_imp.size()-1-i);
-    }
-
-    bool getNeg(size_t i) const {
-        return _imp.test(_imp.size()/2-1-i);
-    }
-    
-    void setPos(size_t i,bool b) {
-        _imp[_imp.size()-1-i] = b;
-    }
-
-    void setNeg(size_t i, bool b) {
-        _imp[_imp.size()/2-1-i] = b;
-    }
-
-    std::string pos() const {
-        std::ostringstream oss;
-        oss << getPos();
-        return oss.str();
-    }
-
-    std::string neg() const {
-        std::ostringstream oss;
-        oss << getNeg();
-        return oss.str();
-    }
-};
-
+#include "common.h"
+#include "impStore.cpp"
 
 class UpBdd {
     public:
@@ -146,17 +54,6 @@ class Bdd {
 };
 
 
-class ImpHashFunction : std::unary_function< Imp , size_t > {
-    public:
-        inline size_t operator() (const Imp& imp) const {
-            boost::hash<ImpP> hasher;
-            std::size_t hash = imp._imp.to_ulong() + hasher(imp._nextP) + imp._level;
-            boost::hash_combine(hash, imp._imp.to_ulong());
-            boost::hash_combine(hash, imp._nextP);
-            boost::hash_combine(hash, imp._level);
-            return hash;
-        }
-};
 
 class BddHashFunction : std::unary_function< Bdd , size_t > {
     public:
@@ -190,22 +87,6 @@ class BddEqual : std::equal_to< Bdd > {
         }
 };
 
-
-class ImpEqual : std::equal_to< Imp > {
-    public:
-        bool operator() (const Imp& a, const Imp& b) const {
-            return (a._level ==  b._level &&
-                    a._imp   ==  b._imp  &&
-                    a._nextP  ==  b._nextP);
-        }
-};
-
-void printImp(const ImpP imp)
-{
-    ImpHashFunction hasher;
-    std::cout << "imp: " << imp->toString() << "\t hash: " << hasher(*imp) << std::endl;
-}
-
 void printBdd(const BddP bdd)
 {
     BddHashFunction hasher;
@@ -213,149 +94,7 @@ void printBdd(const BddP bdd)
 }
 
 typedef boost::unordered_map< Bdd, BddP, BddHashFunction, BddEqual > BddStoreT;
-typedef boost::unordered_map< Imp, ImpP, ImpHashFunction, ImpEqual > ImpStoreT;
 
-class ImpStore {
-    public: 
-
-        ImpStore(unsigned long size):
-             store(size)
-        {
-            ImpP iOne = new Imp(1,0x0000,impOne);
-            store[*iOne] = impOne;
-        }
-
-        bool lookup(const Imp imp) const {
-            return store.find(imp) != store.end();
-        }  
-
-        ImpP add(const Imp imp) {
-            //std::cout << "imp add: " << imp.toString() << std::endl;
-            if (!imp._imp.any()) {
-                return imp._nextP;
-            }
-            
-            ImpStoreT::iterator i = store.find(imp);
-            ImpP result;
-            if (i != store.end() ) {
-                result = i->second;
-            } else {
-                result = new Imp(imp);
-                store[imp]=result;
-            }            
-            return result;
-        }
-
-        void debug() {
-            BOOST_FOREACH(const ImpStoreT::value_type& i , store) {
-                if (i.second != impOne) printImp(i.second);
-            };
-        }
-
-        size_t size() {
-            return store.size();
-        }
-
-        // a - b = a XOR impIntersection(a,b)
-        ImpP impSubtraction(ImpP a, ImpP b) {
-            if (a == impOne) {
-                return impOne;
-            } else if (b == impOne ) {
-                return a;
-            } else if (a->_level == b->_level) {
-                Imp imp = Imp(a->_level,0x0000,impOne);
-                imp.setPos(a->getPos() ^ (a->getPos() & b->getPos()));
-                imp.setNeg(a->getNeg() ^ (a->getNeg() & b->getNeg()));
-                imp._nextP = impSubtraction(a->_nextP,b->_nextP);
-                return add(imp);
-            } else if (a->_level < b->_level) {
-                return impSubtraction(a,b->_nextP);
-            } else {
-                return impSubtraction(a->_nextP,b);
-            }
-        }
-        
-        ImpP impIntersection(ImpP a, ImpP b) {
-            if (a == impOne || b == impOne ) {
-                return impOne;
-            } else if (a->_level == b->_level) {
-                Imp imp = Imp(1,0x0000,impOne);
-                imp._level = a->_level;
-                imp.setPos(a->getPos() & b->getPos());
-                imp.setNeg(a->getNeg() & b->getNeg());
-                imp._nextP = impIntersection(a->_nextP,b->_nextP);
-                return add(imp);
-            } else if (a->_level < b->_level) {
-                return impIntersection(a,b->_nextP);
-            } else {
-                return impIntersection(a->_nextP,b);
-            }
-        }
-        
-
-        ImpReturn impUnion(ImpP a, ImpP b) {
-            ImpReturn result;
-            if (a == impOne) {
-                result.first = SAT;
-                result.second = b;
-                return result;
-            }
-            else if (b == impOne) {
-                result.first = SAT;
-                result.second = a;
-                return result;
-            }
-
-            Imp imp(0,0x0000,NULL);
-            ImpP nextA;
-            ImpP nextB; 
-            
-            if (a->_level == b->_level) {
-                imp._level = a->_level;
-                imp.setPos(a->getPos() | b->getPos());
-                imp.setNeg(a->getNeg() | b->getNeg());
-                if(imp.getPos().to_ulong() & imp.getNeg().to_ulong()) {
-                    result.first = UNSAT;
-                    return result;
-                } else {
-                    nextA = a->_nextP;
-                    nextB = b->_nextP;
-                }
-            } else if (a->_level < b->_level) {
-                nextA = a;
-                nextB = b->_nextP;
-                imp._level = b->_level;
-                imp._imp = b->_imp;
-            } else {
-                nextA = a->_nextP;
-                nextB = b;
-                imp._level = a->_level;
-                imp._imp = a->_imp; 
-            }
-            
-            ImpReturn recursion = impUnion(nextA,nextB);
-        
-            if (recursion.first == UNSAT) {
-                result = recursion;
-            } else {
-                result.first = SAT;
-                imp._nextP = recursion.second;
-                result.second = add(imp);
-            }
-            return result;
-        }
-
-        ImpReturn impUnion(ImpP a, ImpP b, ImpP c) {
-            ImpReturn result = impUnion(a,b);
-            if (result.first == SAT) {
-                result = impUnion(result.second,c);
-            }
-            return result;
-        }
-
-    private:
-        ImpStoreT store;
-};
 
 class BddStore {
     public: 
