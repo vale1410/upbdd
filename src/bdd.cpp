@@ -9,7 +9,14 @@
 #include <boost/foreach.hpp>
 
 #include "common.h"
-#include "impStore.cpp"
+#include "imp.h"
+#include "impStore.h"
+
+class Bdd;
+typedef Bdd* BddP;
+
+class UpBdd;
+typedef std::pair<Feedback,UpBdd> BddReturn;
 
 class UpBdd {
     public:
