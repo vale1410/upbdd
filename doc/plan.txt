@@ -1,5 +1,9 @@
 next days: 
+[] : impliedLevel
+[] : adjustLevel ( in impStore )
+[] : makeNewImpWithBit / in impStore
 [] : finish bddAnd, test suite
+[] : do the cache!
 
 unordered: 
 * split into several files: imp, upbdd, backend, test, inout, 

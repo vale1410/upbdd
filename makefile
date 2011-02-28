@@ -2,7 +2,7 @@
 # makefile for the upbdd project.
 #
 
-CC = g++ -Wall -g 
+CC = g++ -Wall -g
 
 all: start
 

@@ -23,6 +23,7 @@ class ImpStore {
         size_t size();
 
         ImpP impSubtraction(ImpP a, ImpP b);
+
         ImpP impIntersection(ImpP a, ImpP b);
         
         ImpReturn impUnion(ImpP a, ImpP b);

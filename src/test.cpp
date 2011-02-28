@@ -10,10 +10,10 @@ void testHashFunction();
 
 int main () 
 {
-    testSizes();
-    testImp();
+    //testSizes();
+    //testImp();
     testBdd();
-    testHashFunction();
+    //testHashFunction();
 } 
 
 bool testBdd1() {
@@ -305,11 +305,11 @@ void testHashFunction() {
     size_t hash = 0; 
     boost::hash_combine(hash,1);
     std::cout << hash << std::endl;
-    boost::hash_combine(hash,1);
-    std::cout << hash << std::endl;
     boost::hash_combine(hash,2);
     std::cout << hash << std::endl;
     boost::hash_combine(hash,3);
+    std::cout << hash << std::endl;
+    boost::hash_combine(hash,0);
     std::cout << hash << std::endl;
 }
 

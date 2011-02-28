@@ -1,4 +1,3 @@
-#include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/functional/hash.hpp>
 #include <boost/foreach.hpp>
@@ -120,7 +119,7 @@ Level Backend::maxLevel(BddP a,BddP b) {
 
 BddReturn Backend::bddAnd(UpBdd a, UpBdd b, ImpP impP) {
     BddReturn result(SAT,UpBdd(impOne,bddOne));
-    ImpReturn impR = impUnion(a._impP,b._impP,impP);
+    ImpReturn impR = impU// do in one step, saves some imp allocationsnion(a._impP,b._impP,impP); // do in one step, saves some imp allocations
 
     if (impR.first == UNSAT) {
         result.first = UNSAT;
@@ -133,10 +132,12 @@ BddReturn Backend::bddAnd(UpBdd a, UpBdd b, ImpP impP) {
             result.second = UpBdd(impP,bddOne);        
         } else {
             const Level level = maxLevel(bddPa,bddPb);
-            adjustLevel(impP,level); // might change impP
+            impP = adjustLevel(impP,level); // might change impP
 
-            if (impliedLevel(impP,level) ) { // does the impP imply this level?
-                return bddAndCall(bddPa,bddPb,impP,impP->getPos(level));
+            // check for cache
+
+            if (impliedLevel(impP,level)) { // does the impP imply this level?
+                result = bddAndCall(bddPa,bddPb,impP,impP->getPos(level));
             } else {
                 BddReturn highReturn = bddAndCall(bddPa,bddPb,impP,true);
                 BddReturn lowReturn  = bddAndCall(bddPa,bddPb,impP,false);
@@ -148,11 +149,11 @@ BddReturn Backend::bddAnd(UpBdd a, UpBdd b, ImpP impP) {
                     result.first = UNSAT;
                 } else if (highReturn.first == SAT && lowReturn.first == UNSAT) {
                     //allocate a new imp
-                    highReturn.second._impP->setPos(level,true); // todo!
+                    highReturn.second._impP = highReturn.second._impP->setPos(level,true); // todo!
                     result = highReturn;
                 } else if (highReturn.first == UNSAT && lowReturn.first == SAT) {
                     //allocate a new imp
-                    lowReturn.second._impP->setNeg(level,true); // todo!
+                    lowReturn.second._impP = lowReturn.second._impP->setNeg(level,true); // todo!
                     result = lowReturn;
                 }  
             }
