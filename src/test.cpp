@@ -2,6 +2,7 @@
 
 #include "bddStore.h"
 #include "impStore.h"
+#include "backend.h"
 
 void testSizes();
 void testImp();

@@ -7,6 +7,17 @@
 
 #include "common.h"
 
+/*
+ * level 0 does not exist! everything starts with level 1. 
+ * A block is sofar 8 levels, and each imp has exactly 1 block. 
+ * so:
+ * level 1, is level 1 in block 1. 
+ * level 8, is level 8 in block 1. 
+ * level 9 is level 1 in block 2. 
+ * level 59 is level 3 in block 8. 
+ * level n is level n%8 in block (n-1)/8 + 1.// if n%8==0 then give 8
+ */
+
 class Imp;
 typedef Imp* ImpP;
 

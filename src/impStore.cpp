@@ -6,7 +6,7 @@
 ImpStore::ImpStore(unsigned long size):
      store(size)
 {
-    ImpP iOne = new Imp(1,0x0000,impOne);
+    ImpP iOne = new Imp(1,0x0000,impOne); // dummy element
     store[*iOne] = impOne;
 }
 
@@ -137,3 +137,19 @@ ImpReturn ImpStore::impUnion(ImpP a, ImpP b, ImpP c) {
     }
     return result;
 }
+
+//TODO: not implemented yet exception
+bool ImpStore::impliedLevel(ImpP imp, Level level) {
+    return false;
+}
+
+        //TODO: not implemented yet exception
+ImpP ImpStore::adjustLevel(ImpP imp, Level level) {
+    return imp;
+}
+        
+//TODO: not implemented yet exception
+ImpP ImpStore::makeNewImpWithLevel(ImpP imp, Level level, bool direction) {
+    return imp;
+}
+

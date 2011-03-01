@@ -8,7 +8,6 @@
 
 typedef boost::unordered_map< Imp, ImpP, ImpHashFunction, ImpEqual > ImpStoreT;
 
-
 class ImpStore {
     public: 
 
@@ -28,6 +27,15 @@ class ImpStore {
         
         ImpReturn impUnion(ImpP a, ImpP b);
         ImpReturn impUnion(ImpP a, ImpP b, ImpP c);
+        
+        //TODO: not implemented yet exception
+        bool impliedLevel(ImpP imp, Level level);
+
+        //TODO: not implemented yet exception
+        ImpP adjustLevel(ImpP, Level);
+
+        //TODO: not implemented yet exception
+        ImpP makeNewImpWithLevel(ImpP, Level, bool direction);
 
     private:
         ImpStoreT store;
