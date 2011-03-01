@@ -47,13 +47,13 @@ ImpP ImpStore::impSubtraction(ImpP a, ImpP b) {
         return impOne;
     } else if (b == impOne ) {
         return a;
-    } else if (a->_level == b->_level) {
-        Imp imp = Imp(a->_level,0x0000,impOne);
+    } else if (a->_block == b->_block) {
+        Imp imp = Imp(a->_block,0x0000,impOne);
         imp.setPos(a->getPos() ^ (a->getPos() & b->getPos()));
         imp.setNeg(a->getNeg() ^ (a->getNeg() & b->getNeg()));
         imp._nextP = impSubtraction(a->_nextP,b->_nextP);
         return add(imp);
-    } else if (a->_level < b->_level) {
+    } else if (a->_block < b->_block) {
         return impSubtraction(a,b->_nextP);
     } else {
         return impSubtraction(a->_nextP,b);
@@ -63,14 +63,14 @@ ImpP ImpStore::impSubtraction(ImpP a, ImpP b) {
 ImpP ImpStore::impIntersection(ImpP a, ImpP b) {
     if (a == impOne || b == impOne ) {
         return impOne;
-    } else if (a->_level == b->_level) {
+    } else if (a->_block == b->_block) {
         Imp imp = Imp(1,0x0000,impOne);
-        imp._level = a->_level;
+        imp._block = a->_block;
         imp.setPos(a->getPos() & b->getPos());
         imp.setNeg(a->getNeg() & b->getNeg());
         imp._nextP = impIntersection(a->_nextP,b->_nextP);
         return add(imp);
-    } else if (a->_level < b->_level) {
+    } else if (a->_block < b->_block) {
         return impIntersection(a,b->_nextP);
     } else {
         return impIntersection(a->_nextP,b);
@@ -95,8 +95,8 @@ ImpReturn ImpStore::impUnion(ImpP a, ImpP b) {
     ImpP nextA;
     ImpP nextB; 
     
-    if (a->_level == b->_level) {
-        imp._level = a->_level;
+    if (a->_block == b->_block) {
+        imp._block = a->_block;
         imp.setPos(a->getPos() | b->getPos());
         imp.setNeg(a->getNeg() | b->getNeg());
         if(imp.getPos().to_ulong() & imp.getNeg().to_ulong()) {
@@ -106,15 +106,15 @@ ImpReturn ImpStore::impUnion(ImpP a, ImpP b) {
             nextA = a->_nextP;
             nextB = b->_nextP;
         }
-    } else if (a->_level < b->_level) {
+    } else if (a->_block < b->_block) {
         nextA = a;
         nextB = b->_nextP;
-        imp._level = b->_level;
+        imp._block = b->_block;
         imp._imp = b->_imp;
     } else {
         nextA = a->_nextP;
         nextB = b;
-        imp._level = a->_level;
+        imp._block = a->_block;
         imp._imp = a->_imp; 
     }
     
@@ -143,9 +143,13 @@ bool ImpStore::impliedLevel(ImpP imp, Level level) {
     return false;
 }
 
-        //TODO: not implemented yet exception
-ImpP ImpStore::adjustLevel(ImpP imp, Level level) {
-    return imp;
+ImpP ImpStore::adjustLevel(ImpP impP, Level level) const {
+    const unsigned int block = level/8 + 1;
+    if (block == impP->_block || impP == impOne) {
+        return impP;
+    } else {
+        return adjustLevel(impP->_nextP,level);
+    }
 }
         
 //TODO: not implemented yet exception

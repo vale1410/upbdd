@@ -1,6 +1,6 @@
 next days: 
+[done] : adjustLevel ( in impStore )
 [] : impliedLevel
-[] : adjustLevel ( in impStore )
 [] : makeNewImpWithBit / in impStore
 [] : finish bddAnd, test suite
 [] : do the cache!

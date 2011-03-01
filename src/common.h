@@ -5,6 +5,7 @@
 #define bddOne NULL
 
 typedef unsigned int Level;
+typedef unsigned int Block;
 enum Feedback { SAT, UNSAT, BREAK };
 
 #endif

@@ -4,15 +4,15 @@
 
 #include "imp.h"
 
-Imp::Imp(Level level, std::bitset<2*8> imp, ImpP next):
-    _level(level),
+Imp::Imp(Block block, std::bitset<2*8> imp, ImpP next):
+    _block(block),
     _imp(imp),
     _nextP(next)
 {}
 
 std::string Imp::toString() const {
     std::ostringstream oss;
-    oss << this << " = " << "(" << _level <<  "," << pos() <<  "," << neg() << "," << _nextP <<  ")";
+    oss << this << " = " << "(" << _block <<  "," << pos() <<  "," << neg() << "," << _nextP <<  ")";
     return oss.str();
 }
 
@@ -80,7 +80,7 @@ void Imp::printImp()
 
 
 bool ImpEqual::operator() (const Imp& a, const Imp& b) const {
-    return (a._level ==  b._level &&
+    return (a._block ==  b._block &&
             a._imp   ==  b._imp  &&
             a._nextP  ==  b._nextP);
 }

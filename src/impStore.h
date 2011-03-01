@@ -31,8 +31,7 @@ class ImpStore {
         //TODO: not implemented yet exception
         bool impliedLevel(ImpP imp, Level level);
 
-        //TODO: not implemented yet exception
-        ImpP adjustLevel(ImpP, Level);
+        ImpP adjustLevel(ImpP, Level) const;
 
         //TODO: not implemented yet exception
         ImpP makeNewImpWithLevel(ImpP, Level, bool direction);

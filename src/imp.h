@@ -27,11 +27,11 @@ class Imp {
 
     public:
 
-    Level _level;
+    Block _block;
     std::bitset<2*8> _imp;
     ImpP _nextP;
 
-    Imp(Level level, std::bitset<2*8> imp, ImpP next);
+    Imp(Block block, std::bitset<2*8> imp, ImpP next);
     
     std::string toString() const;
 
@@ -64,10 +64,10 @@ class ImpHashFunction : std::unary_function< Imp , size_t > {
 
     inline size_t operator() (const Imp& imp) const {
         boost::hash<ImpP> hasher;
-        std::size_t hash = imp._imp.to_ulong() + hasher(imp._nextP) + imp._level;
+        std::size_t hash = imp._imp.to_ulong() + hasher(imp._nextP) + imp._block;
         boost::hash_combine(hash, imp._imp.to_ulong());
         boost::hash_combine(hash, imp._nextP);
-        boost::hash_combine(hash, imp._level);
+        boost::hash_combine(hash, imp._block);
         return hash;
     }
 
