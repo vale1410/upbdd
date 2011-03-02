@@ -44,20 +44,44 @@ std::bitset<8> Imp::getNeg() const {
     return result;
 }
 
-bool Imp::getPos(size_t i) const {
-    return _imp.test(_imp.size()-1-i);
+bool Imp::getPos(size_t pos) const {
+    return _imp.test(_imp.size()-1-pos);
 }
 
-bool Imp::getNeg(size_t i) const {
-    return _imp.test(_imp.size()/2-1-i);
+bool Imp::getNeg(size_t pos) const {
+    return _imp.test(_imp.size()/2-1-pos);
 }
 
-void Imp::setPos(size_t i,bool b) {
-    _imp[_imp.size()-1-i] = b;
+void Imp::setPos(size_t pos,bool b) {
+    _imp[_imp.size()-1-pos] = b;
 }
 
-void Imp::setNeg(size_t i, bool b) {
-    _imp[_imp.size()/2-1-i] = b;
+void Imp::setNeg(size_t pos, bool b) {
+    _imp[_imp.size()/2-1-pos] = b;
+}
+
+bool Imp::getNegImp(Level level) {
+    size_t pos = level % 8;
+    if (pos == 0) pos = 8;
+    return getNeg(8-level);
+}
+
+bool Imp::getPosImp(Level level) {
+    size_t pos = level % 8; 
+    if (pos == 0) pos = 8;
+    return getPos(8-level);
+}
+
+void Imp::setNegImp(Level level) {
+    size_t pos = level % 8;
+    if (pos == 0) pos = 8;
+    setNeg(8-level,true);
+}
+
+void Imp::setPosImp(Level level) {
+    size_t pos = level % 8;
+    if (pos == 0) pos = 8;
+    setPos(8-level,true);
 }
 
 std::string Imp::pos() const {

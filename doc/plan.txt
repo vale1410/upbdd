@@ -1,3 +1,7 @@
+tody: 
+* finish impliedLevel, and makeNewWithBit!
+* make a first simple test!
+
 next days: 
 [done] : adjustLevel ( in impStore )
 [] : impliedLevel

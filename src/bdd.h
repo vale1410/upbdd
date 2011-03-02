@@ -19,6 +19,8 @@ class UpBdd {
 
         UpBdd(ImpP impP,BddP bddP);
         bool operator==(const UpBdd &other) const;
+        
+        std::string toString() const;
 
     BddP _bddP;
     ImpP _impP;

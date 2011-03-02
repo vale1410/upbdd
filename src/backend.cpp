@@ -88,11 +88,11 @@ BddReturn Backend::bddAnd(UpBdd a, UpBdd b, ImpP impP) {
                     result.first = UNSAT;
                 } else if (highReturn.first == SAT && lowReturn.first == UNSAT) {
                     //allocate a new imp
-                    highReturn.second._impP->setPos(level,true); // todo!
+                    highReturn.second._impP = impStore.makeNewImpWithLevel(highReturn.second._impP, level, true);  
                     result = highReturn;
                 } else if (highReturn.first == UNSAT && lowReturn.first == SAT) {
                     //allocate a new imp
-                    lowReturn.second._impP->setNeg(level,true); // todo!
+                    lowReturn.second._impP = impStore.makeNewImpWithLevel(highReturn.second._impP, level, false);  
                     result = lowReturn;
                 }  
             }

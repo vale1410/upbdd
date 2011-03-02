@@ -13,6 +13,12 @@ bool UpBdd::operator==(const UpBdd &other) const {
     return _bddP == other._bddP && _impP == other._impP;
 }
 
+std::string UpBdd::toString() const {
+    std::ostringstream oss;
+    oss << " <" << _impP <<  "," << _bddP <<  ">";
+    return oss.str();
+}
+
 
 Bdd::Bdd(Level level, UpBdd high, UpBdd low) :
     _level(level),

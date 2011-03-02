@@ -91,7 +91,7 @@ ImpReturn ImpStore::impUnion(ImpP a, ImpP b) {
         return result;
     }
 
-    Imp imp(0,0x0000,NULL);
+    Imp imp(0,0x0000,impOne);
     ImpP nextA;
     ImpP nextB; 
     
@@ -138,22 +138,45 @@ ImpReturn ImpStore::impUnion(ImpP a, ImpP b, ImpP c) {
     return result;
 }
 
-//TODO: not implemented yet exception
-bool ImpStore::impliedLevel(ImpP imp, Level level) {
-    return false;
+/*
+ * returns 0 if level is not in first block of imp
+ * precondition: impP->_block == level/8 + 1
+ *
+ */
+bool ImpStore::impliedLevel(ImpP impP, Level level) {
+    if (impP == impOne) {
+        return false;
+    } else {
+        return impP->getPosImp(level) || impP->getNegImp(level);
+    }
 }
 
 ImpP ImpStore::adjustLevel(ImpP impP, Level level) const {
     const unsigned int block = level/8 + 1;
-    if (block == impP->_block || impP == impOne) {
+    if (impP == impOne || block == impP->_block) {
         return impP;
     } else {
         return adjustLevel(impP->_nextP,level);
     }
 }
         
-//TODO: not implemented yet exception
-ImpP ImpStore::makeNewImpWithLevel(ImpP imp, Level level, bool direction) {
-    return imp;
+/*
+ * precondition: impP->_block == level/8 + 1
+ *
+ */
+ImpP ImpStore::makeNewImpWithLevel(ImpP impP, Level level, bool direction) {
+    Imp newImp(0,0x0000,impOne);
+    if (impP != impOne) {
+        newImp = *impP;
+    } else {
+        newImp._block = level/8 + 1;
+        newImp._nextP = impOne;
+    }
+    if (direction) {
+        newImp.setPosImp(level);
+    } else {
+        newImp.setNegImp(level);
+    }
+    return add(newImp);
 }
 

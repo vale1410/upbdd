@@ -27,30 +27,44 @@ class Imp {
 
     public:
 
-    Block _block;
-    std::bitset<2*8> _imp;
-    ImpP _nextP;
+        Block _block;
+        std::bitset<2*8> _imp;
+        ImpP _nextP;
 
-    Imp(Block block, std::bitset<2*8> imp, ImpP next);
+        Imp(Block block, std::bitset<2*8> imp, ImpP next);
+        
+        std::string toString() const;
+
+        void setPos(std::bitset<8> bits);
+        void setNeg(std::bitset<8> bits);
+        
+        std::bitset<8> getPos() const;
+        std::bitset<8> getNeg() const;
+
+        void setNegImp(Level);
+        void setPosImp(Level);
+
+        bool getNegImp(Level);
+        bool getPosImp(Level);
+
+        std::string pos() const;
+        std::string neg() const;
+
+        void printImp();
     
-    std::string toString() const;
-
-    void setPos(std::bitset<8> bits);
-    void setNeg(std::bitset<8> bits);
+        bool getPos(size_t pos) const;
+        bool getNeg(size_t pos) const;
     
-    std::bitset<8> getPos() const;
-    std::bitset<8> getNeg() const;
-    
-    bool getPos(size_t i) const;
-    bool getNeg(size_t i) const;
+    private:
 
-    void setPos(size_t i,bool b);
-    void setNeg(size_t i, bool b);
+        /* 
+         * the following four functions are technical, i.e
+         * i referes to the technical position (starting from 0). 
+         * the first bit in the positive vector is at position 0
+         */
 
-    std::string pos() const;
-    std::string neg() const;
-
-    void printImp();
+        void setPos(size_t pos, bool b);
+        void setNeg(size_t pos, bool b);
 
 };
 

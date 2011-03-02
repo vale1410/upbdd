@@ -33,19 +33,19 @@ bool testBdd1() {
     return ok && before + 1 == backend->sizeBdd();
 }
 
-bool testBdd2() {
+bool testBdd3() {
     Backend::SP backend(new Backend(20,20));
     size_t before = backend->sizeBdd();
     Imp i1(1,0x0100,impOne); // 1
     Imp i2(1,0x0001,impOne); // -1
     ImpP iP1 = backend->add(i1);
     ImpP iP2 = backend->add(i2);
-    Bdd bdd1(2,bddOne,bddOne,iP1,iP2); // 2 -> 1 ; -1
-    Bdd bdd2(2,bddOne,bddOne,iP2,iP1); // 2 -> -1 ; 1
+    Bdd bdd1(2,bddOne,bddOne,iP1,impOne); // 2 -> 1 
+    Bdd bdd2(2,bddOne,bddOne,iP2,impOne); // 2 -> -1 
     UpBdd upBdd1 = backend->add(bdd1);
     UpBdd upBdd2 = backend->add(bdd2);
-    Bdd bdd3(3,upBdd1,upBdd2); // 3 -> bdd1 ; bdd2
-    backend->add(bdd3);
+    BddReturn result = backend->bddAnd(upBdd1,upBdd2,impOne);
+    std::cout << "result 1 is: " << result.first << " " << result.second.toString() << std::endl;
     backend->debug();
     return before + 3 == backend->sizeBdd();
 }
@@ -53,7 +53,8 @@ bool testBdd2() {
 
 void testBdd() {
     //std::cout << "testBdd 1: " << testBdd1() << std::endl;
-    std::cout << "testBdd 2: " << testBdd2() << std::endl;
+    //std::cout << "testBdd 2: " << testBdd2() << std::endl;
+    std::cout << "testBdd 3: " << testBdd3() << std::endl;
     //std::cout << "testBdd 3: " << testBdd3() << std::endl;
     //std::cout << "testBdd 4: " << testBdd4() << std::endl;
     //std::cout << "testBdd 5: " << testBdd5() << std::endl;
