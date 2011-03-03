@@ -9,6 +9,11 @@ UpBdd::UpBdd(ImpP impP,BddP bddP):
         _impP(impP)
     {} 
 
+UpBdd::UpBdd():
+        _bddP(bddOne),
+        _impP(impOne)
+    {} 
+
 bool UpBdd::operator==(const UpBdd &other) const {
     return _bddP == other._bddP && _impP == other._impP;
 }
@@ -19,6 +24,11 @@ std::string UpBdd::toString() const {
     return oss.str();
 }
 
+Bdd::Bdd() :
+    _level(0),
+    _high(UpBdd()),
+    _low(UpBdd())
+    {}
 
 Bdd::Bdd(Level level, UpBdd high, UpBdd low) :
     _level(level),

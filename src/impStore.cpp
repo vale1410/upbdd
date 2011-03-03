@@ -32,7 +32,7 @@ ImpP ImpStore::add(const Imp imp) {
 }
 
 void ImpStore::debug() {
-    BOOST_FOREACH(const ImpStoreT::value_type& i , store) {
+    foreach(const ImpStoreT::value_type& i , store) {
         if (i.second != impOne) i.second->printImp();
     };
 }
@@ -182,5 +182,13 @@ ImpP ImpStore::makeNewImpWithLevel(ImpP impP, Level level, bool direction) {
         newImp.setNegImp(level);
     }
     return add(newImp);
+}
+
+ImpP ImpStore::makeVar(Variable var) {
+    if (var > 0) {
+        return makeNewImpWithLevel(impOne,var,true);
+    } else {
+        return makeNewImpWithLevel(impOne,-1*var,false);
+    }
 }
 

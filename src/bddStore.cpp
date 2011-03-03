@@ -41,7 +41,7 @@ UpBdd BddStore::add(const Bdd bdd, ImpStore& impStore)  {
 }
 
 void BddStore::debug() const {
-    BOOST_FOREACH(const BddStoreT::value_type& i , store) {
+    foreach(const BddStoreT::value_type& i , store) {
         if (i.second != bddOne) i.second->printBdd();
     };
 }

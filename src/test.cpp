@@ -92,12 +92,26 @@ bool testBdd4() {
     return re._bddP == bddOne && re._impP->getPosImp(1) && re._impP->getPosImp(2) && !re._impP->getPosImp(3);
 }
 
+bool testBdd5() {
+    Backend::SP backend(new Backend(20,20));
+    Clause c1;
+    c1.push_back(2);
+    c1.push_back(-5);
+    c1.push_back(9);
+    c1.push_back(-127);
+    UpBdd up1 = backend->makeClause(c1);
+    backend->printClause(c1);
+    backend->debug();
+    return true;
+}
+
+
 void testBdd() {
     //std::cout << "testBdd 1: " << testBdd1() << std::endl;
     //std::cout << "testBdd 2: " << testBdd2() << std::endl;
     //std::cout << "testBdd 3: " << testBdd3() << std::endl;
-    std::cout << "testBdd 4: " << testBdd4() << std::endl;
-    //std::cout << "testBdd 5: " << testBdd5() << std::endl;
+    //std::cout << "testBdd 4: " << testBdd4() << std::endl;
+    std::cout << "testBdd 5: " << testBdd5() << std::endl;
     //std::cout << "testBdd 6: " << testBdd6() << std::endl;
     //std::cout << "testBdd 7: " << testBdd6() << std::endl;
 }
@@ -140,8 +154,8 @@ bool testImp4() {
     size_t before = backend->sizeImp();
     bool ok = true;
     Imp i1(1,0x0100,impOne); // 1
-    Imp i2(1,0x0010,impOne); // 1
-    Imp i3(1,0x0110,impOne); // 1
+    Imp i2(1,0x0010,impOne); // -5
+    Imp i3(1,0x0110,impOne); // 1 /\ -5
     ImpP iP1 = backend->add(i1);
     ImpP iP2 = backend->add(i2);
     ImpReturn result = backend->impUnion(iP1,iP2);
@@ -157,7 +171,7 @@ bool testImp5() {
     size_t before = backend->sizeImp();
     bool ok = true;
     Imp i1(1,0x0100,impOne); // 1
-    Imp i2(1,0x0001,impOne); // 1
+    Imp i2(1,0x0001,impOne); // -1
     ImpP iP1 = backend->add(i1);
     ImpP iP2 = backend->add(i2);
     ImpReturn result = backend->impUnion(iP1,iP2);
@@ -188,7 +202,7 @@ bool testImp7() {
     size_t before = backend->sizeImp();
     bool ok = true;
     Imp i1(1,0x0100,impOne); // 1
-    Imp i2(2,0x0001,impOne); // 1
+    Imp i2(2,0x0001,impOne); // -1
     ImpP iP1 = backend->add(i1);
     ImpP iP2 = backend->add(i2);
     ImpReturn result = backend->impUnion(iP2,iP1);
@@ -203,8 +217,8 @@ bool testImp8() {
     size_t before = backend->sizeImp();
     bool ok = true;
     Imp i1(1,0x0100,impOne); // 1
-    Imp i2(2,0xF000,impOne); // 1
-    Imp i3(2,0x000F,impOne); // 1
+    Imp i2(2,0xF000,impOne); // 5 and 6 and 7 and 8
+    Imp i3(2,0x000F,impOne); // -1 and -2 and -3 and -4
     ImpP iP1 = backend->add(i1);
     ImpP iP2 = backend->add(i2);
     ImpP iP3 = backend->add(i3);

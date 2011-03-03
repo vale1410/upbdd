@@ -18,6 +18,8 @@ class UpBdd {
     public:
 
         UpBdd(ImpP impP,BddP bddP);
+        UpBdd();
+
         bool operator==(const UpBdd &other) const;
         
         std::string toString() const;
@@ -30,8 +32,8 @@ class UpBdd {
 class Bdd {
     public:
         
+        Bdd();
         Bdd(Level level, UpBdd high, UpBdd low);
-                    
         Bdd(Level level, BddP highP, BddP lowP, ImpP hImpP, ImpP lImpP);
 
         void printBdd();

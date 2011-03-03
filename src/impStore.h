@@ -28,13 +28,13 @@ class ImpStore {
         ImpReturn impUnion(ImpP a, ImpP b);
         ImpReturn impUnion(ImpP a, ImpP b, ImpP c);
         
-        //TODO: not implemented yet exception
         bool impliedLevel(ImpP imp, Level level);
 
         ImpP adjustLevel(ImpP, Level) const;
 
-        //TODO: not implemented yet exception
         ImpP makeNewImpWithLevel(ImpP, Level, bool direction);
+        
+        ImpP makeVar(Variable);
 
     private:
         ImpStoreT store;

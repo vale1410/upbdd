@@ -1,3 +1,6 @@
+#include <iostream>
+#include <sstream>
+
 #include "common.h"
 #include "imp.h"
 #include "bdd.h"
@@ -94,9 +97,7 @@ BddReturn Backend::bddAnd(UpBdd a, UpBdd b, ImpP impP) {
                 BddReturn highReturn = bddAndCall(bddPa,bddPb,impP,true);
                 BddReturn lowReturn  = bddAndCall(bddPa,bddPb,impP,false);
                 if (highReturn.first == SAT && lowReturn.first == SAT) {
-                    result.first = SAT;
-                    Bdd bdd(level, highReturn.second, lowReturn.second);
-                    result.second = add(bdd);
+                    result.first = SAT; Bdd bdd(level, highReturn.second, lowReturn.second); result.second = add(bdd);
                 } else if (highReturn.first == UNSAT && lowReturn.first == UNSAT) {
                     result.first = UNSAT;
                 } else if (highReturn.first == SAT && lowReturn.first == UNSAT) {
@@ -136,3 +137,31 @@ BddReturn Backend::bddAndCall(const BddP a, const BddP b, const ImpP impP, const
     } 
 }
 
+UpBdd Backend::makeClause(Clause clause) {
+    UpBdd up;
+    Clause::iterator iter = clause.begin();
+    if(iter != clause.end()) {
+        const UpBdd upOne;
+        Bdd bdd;
+        ImpP impP = impStore.makeVar(*iter);
+        iter++;
+        up = UpBdd(impP,bddOne);
+        for(;iter != clause.end();iter++) {
+            if (*iter > 0 ) {
+                bdd = Bdd(*iter,upOne,up);
+                up = add(bdd);
+            } else {
+                bdd = Bdd(-1*(*iter),up,upOne);
+                up = add(bdd);
+            }
+        };
+    }
+    return up;
+}
+
+void Backend::printClause(Clause clause) {
+    for(Clause::iterator iter = clause.begin(); iter!=clause.end(); iter++) {
+        std::cout << *iter << " ";
+    }
+    std::cout << std::endl;
+}
