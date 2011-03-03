@@ -48,9 +48,16 @@ size_t Backend::sizeBdd() {
     return bddStore.size();
 }
 
+/*
+ * one of a and b is not bddOne
+ */
 
 Level Backend::maxLevel(BddP a,BddP b) {
-    if (a->_level > b->_level) {
+    if (a == bddOne) {
+        return b->_level;
+    } else if (b == bddOne) {
+        return a->_level;
+    } else if (a->_level > b->_level) {
         return a->_level;
     } else {
         return b->_level;
@@ -76,7 +83,13 @@ BddReturn Backend::bddAnd(UpBdd a, UpBdd b, ImpP impP) {
             impP = impStore.adjustLevel(impP,level); // might change impP
 
             if (impStore.impliedLevel(impP,level) ) { // does the impP imply this level?
-                return bddAndCall(bddPa,bddPb,impP,impP->getPos(level));
+                return bddAndCall(bddPa,bddPb,impP,impP->getPosImp(level));
+            } else if (bddPa == bddOne) {
+                result.first = SAT;
+                result.second = UpBdd(impP,bddPb);
+            } else if (bddPb == bddOne) {
+                result.first = SAT;
+                result.second = UpBdd(impP,bddPa);        
             } else {
                 BddReturn highReturn = bddAndCall(bddPa,bddPb,impP,true);
                 BddReturn lowReturn  = bddAndCall(bddPa,bddPb,impP,false);
@@ -87,11 +100,9 @@ BddReturn Backend::bddAnd(UpBdd a, UpBdd b, ImpP impP) {
                 } else if (highReturn.first == UNSAT && lowReturn.first == UNSAT) {
                     result.first = UNSAT;
                 } else if (highReturn.first == SAT && lowReturn.first == UNSAT) {
-                    //allocate a new imp
                     highReturn.second._impP = impStore.makeNewImpWithLevel(highReturn.second._impP, level, true);  
                     result = highReturn;
                 } else if (highReturn.first == UNSAT && lowReturn.first == SAT) {
-                    //allocate a new imp
                     lowReturn.second._impP = impStore.makeNewImpWithLevel(highReturn.second._impP, level, false);  
                     result = lowReturn;
                 }  
@@ -104,24 +115,24 @@ BddReturn Backend::bddAnd(UpBdd a, UpBdd b, ImpP impP) {
 BddReturn Backend::bddAndCall(const BddP a, const BddP b, const ImpP impP, const bool direction) {
     UpBdd aUpBdd(impOne,a);
     UpBdd bUpBdd(impOne,b);
-    if (a->_level == b->_level) {
-        if (direction) {
-            return bddAnd(a->_high, b->_high, impP);
-        } else {
-            return bddAnd(a->_low, b->_low, impP);
-        }
-    } else if (a->_level > b->_level) {
+    if (b == bddOne || a->_level > b->_level) {
         if (direction) {
             return bddAnd(a->_high, bUpBdd, impP);
         } else {
             return bddAnd(a->_low, bUpBdd, impP);
         }
-    } else {
+    } else if (a == bddOne || a->_level < b->_level) {
         if (direction) {
             return bddAnd(aUpBdd, b->_high, impP);
         } else {
             return bddAnd(aUpBdd, b->_low, impP);
         }
-    }
+    } else {
+        if (direction) {
+            return bddAnd(a->_high, b->_high, impP);
+        } else {
+            return bddAnd(a->_low, b->_low, impP);
+        }
+    } 
 }
 

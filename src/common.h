@@ -3,6 +3,7 @@
 
 #define impOne NULL
 #define bddOne NULL
+#define BLOCK 8;
 
 typedef unsigned int Level;
 typedef unsigned int Block;

@@ -33,9 +33,8 @@ bool testBdd1() {
     return ok && before + 1 == backend->sizeBdd();
 }
 
-bool testBdd3() {
+bool testBdd2() {
     Backend::SP backend(new Backend(20,20));
-    size_t before = backend->sizeBdd();
     Imp i1(1,0x0100,impOne); // 1
     Imp i2(1,0x0001,impOne); // -1
     ImpP iP1 = backend->add(i1);
@@ -45,18 +44,59 @@ bool testBdd3() {
     UpBdd upBdd1 = backend->add(bdd1);
     UpBdd upBdd2 = backend->add(bdd2);
     BddReturn result = backend->bddAnd(upBdd1,upBdd2,impOne);
-    std::cout << "result 1 is: " << result.first << " " << result.second.toString() << std::endl;
+    std::cout << "result is: " << result.first << " " << result.second.toString() << std::endl;
     backend->debug();
-    return before + 3 == backend->sizeBdd();
+    return true;
 }
 
+bool testBdd3() {
+    Backend::SP backend(new Backend(20,20));
+    Imp i1(1,0x0100,impOne); // 1
+    //Imp i2(1,0x0001,impOne); // -1
+    //Imp i3(1,0x0200,impOne); // 2
+    ImpP iP1 = backend->add(i1);
+    //ImpP iP2 = backend->add(i2);
+    //ImpP iP3 = backend->add(i3);
+    //Bdd bdd1(2,bddOne,bddOne,iP1,impOne); // 2 -> 1 
+    Bdd bdd2(2,bddOne,bddOne,iP1,impOne); // 2 -> -1 
+    Bdd bdd3(3,bddOne,bddOne,iP1,impOne); // 3 -> -1 
+    //UpBdd upBdd1 = backend->add(bdd1);
+    UpBdd upBdd2 = backend->add(bdd2);
+    UpBdd upBdd3 = backend->add(bdd3);
+    //UpBdd upBdd4(iP3,bddOne);
+    BddReturn result = backend->bddAnd(upBdd2,upBdd3,impOne);
+    std::cout << "result is: " << result.first << " " << result.second.toString() << std::endl;
+    backend->debug();
+    return result.first == SAT;
+}
+
+bool testBdd4() {
+    Backend::SP backend(new Backend(20,20));
+    Imp i1(1,0x0100,impOne); // 1
+    //Imp i2(1,0x0001,impOne); // -1
+    Imp i3(1,0x0200,impOne); // 2
+    ImpP iP1 = backend->add(i1);
+    //ImpP iP2 = backend->add(i2);
+    ImpP iP3 = backend->add(i3);
+    //Bdd bdd1(2,bddOne,bddOne,iP1,impOne); // 2 -> 1 
+    Bdd bdd2(2,bddOne,bddOne,iP1,impOne); // 2 -> 1 
+    Bdd bdd3(3,bddOne,bddOne,iP1,impOne); // 3 -> 1 
+    //UpBdd upBdd1 = backend->add(bdd1);
+    UpBdd upBdd2 = backend->add(bdd2);
+    UpBdd upBdd3 = backend->add(bdd3);
+    //UpBdd upBdd4(iP3,bddOne);
+    BddReturn result = backend->bddAnd(upBdd2,upBdd3,iP3);
+    UpBdd re(result.second);
+    std::cout << "result is: " << result.first << " " << re.toString() << std::endl;
+    backend->debug();
+    return re._bddP == bddOne && re._impP->getPosImp(1) && re._impP->getPosImp(2) && !re._impP->getPosImp(3);
+}
 
 void testBdd() {
     //std::cout << "testBdd 1: " << testBdd1() << std::endl;
     //std::cout << "testBdd 2: " << testBdd2() << std::endl;
-    std::cout << "testBdd 3: " << testBdd3() << std::endl;
     //std::cout << "testBdd 3: " << testBdd3() << std::endl;
-    //std::cout << "testBdd 4: " << testBdd4() << std::endl;
+    std::cout << "testBdd 4: " << testBdd4() << std::endl;
     //std::cout << "testBdd 5: " << testBdd5() << std::endl;
     //std::cout << "testBdd 6: " << testBdd6() << std::endl;
     //std::cout << "testBdd 7: " << testBdd6() << std::endl;
@@ -241,15 +281,12 @@ bool testImp12() {
     Imp i1(1,0x0100,impOne); 
     Imp i2(2,0xF000,impOne); 
     Imp i3(2,0xFF00,impOne); 
-    Imp i4(1,0x0000,impOne); 
-    Imp i5(2,0x0000,impOne); 
-    Imp i6(2,0x0000,impOne); 
     std::bitset<8> p(std::rand());
-    i4.setPos(p);
+    Imp i4(1,p,0x00,impOne); 
     p = std::rand();
-    i5.setNeg(p);
+    Imp i5(2,0x00,p,impOne); 
     p = std::rand();
-    i6.setPos(p);
+    Imp i6(2,p,0x00,impOne); 
     ImpP iP1 = backend->add(i1);
     ImpP iP2 = backend->add(i2);
     ImpP iP3 = backend->add(i3);

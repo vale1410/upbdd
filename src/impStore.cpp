@@ -48,9 +48,12 @@ ImpP ImpStore::impSubtraction(ImpP a, ImpP b) {
     } else if (b == impOne ) {
         return a;
     } else if (a->_block == b->_block) {
-        Imp imp = Imp(a->_block,0x0000,impOne);
-        imp.setPos(a->getPos() ^ (a->getPos() & b->getPos()));
-        imp.setNeg(a->getNeg() ^ (a->getNeg() & b->getNeg()));
+        Imp imp = Imp(a->_block,    
+                      a->getPos() ^ (a->getPos() & b->getPos()),
+                      a->getNeg() ^ (a->getNeg() & b->getNeg()),
+                      impOne);
+        //(a->getPos() ^ (a->getPos() & b->getPos()));
+        //(a->getNeg() ^ (a->getNeg() & b->getNeg()));
         imp._nextP = impSubtraction(a->_nextP,b->_nextP);
         return add(imp);
     } else if (a->_block < b->_block) {
@@ -64,10 +67,10 @@ ImpP ImpStore::impIntersection(ImpP a, ImpP b) {
     if (a == impOne || b == impOne ) {
         return impOne;
     } else if (a->_block == b->_block) {
-        Imp imp = Imp(1,0x0000,impOne);
-        imp._block = a->_block;
-        imp.setPos(a->getPos() & b->getPos());
-        imp.setNeg(a->getNeg() & b->getNeg());
+        Imp imp = Imp(a->_block,
+                      a->getPos() & b->getPos(),
+                      a->getNeg() & b->getNeg(),
+                      impOne);
         imp._nextP = impIntersection(a->_nextP,b->_nextP);
         return add(imp);
     } else if (a->_block < b->_block) {
@@ -91,14 +94,15 @@ ImpReturn ImpStore::impUnion(ImpP a, ImpP b) {
         return result;
     }
 
-    Imp imp(0,0x0000,impOne);
+    Imp imp;
     ImpP nextA;
     ImpP nextB; 
     
     if (a->_block == b->_block) {
-        imp._block = a->_block;
-        imp.setPos(a->getPos() | b->getPos());
-        imp.setNeg(a->getNeg() | b->getNeg());
+        imp = Imp(a->_block,
+                  a->getPos() | b->getPos(),
+                  a->getNeg() | b->getNeg(),
+                  impOne);
         if(imp.getPos().to_ulong() & imp.getNeg().to_ulong()) {
             result.first = UNSAT;
             return result;
