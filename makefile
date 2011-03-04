@@ -3,6 +3,7 @@
 #
 
 CC = g++ -Wall -g
+#CC = g++ -O3
 
 all: start
 
@@ -12,10 +13,14 @@ start: upbdd
 upbdd: bdd.o imp.o impStore.o bddStore.o backend.o
 	$(CC) src/test.cpp bin/bddStore.o bin/impStore.o bin/bdd.o bin/imp.o bin/backend.o -o bin/start
 
+input: src/input.cpp 
+	$(CC) src/input.cpp -o bin/input
+	./bin/input
+
 imp.o: src/imp.cpp common.h imp.h
 	$(CC) -o bin/imp.o -c src/imp.cpp 
 
-bdd.o: src/bdd.cpp imp.o common.h  
+bdd.o: src/bdd.cpp imp.o common.h bdd.h
 	$(CC) -o bin/bdd.o -c src/bdd.cpp 
 
 impStore.o: src/impStore.cpp imp.o common.h impStore.h
@@ -32,6 +37,7 @@ backend.h: src/backend.h
 impStore.h: src/impStore.h
 bddStore.h: src/bddStore.h
 imp.h: src/imp.h
+bdd.h: src/bdd.h
 
 clean:
 	rm -fr bin/*

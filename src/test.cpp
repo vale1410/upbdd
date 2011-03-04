@@ -11,10 +11,11 @@ void testHashFunction();
 
 int main () 
 {
-    //testSizes();
-    testImp();
+    testSizes();
+    //testImp();
     testBdd();
     //testHashFunction();
+    return 0;
 } 
 
 bool testBdd1() {
@@ -185,18 +186,18 @@ bool testBdd7() {
     UpBdd up3 = backend->makeClause(c3);
     UpBdd up4 = backend->makeClause(c4);
     BddReturn result = backend->bddAnd(up1,up2);
-    std::cout << "result of 1,2: " << result.first << " " << result.second.toString() << std::endl;
+    //std::cout << "result of 1,2: " << result.first << " " << result.second.toString() << std::endl;
     result = backend->bddAnd(result.second,up3);
-    std::cout << "result of 1,2,3: " << result.first << " " << result.second.toString() << std::endl;
+    //std::cout << "result of 1,2,3: " << result.first << " " << result.second.toString() << std::endl;
     result = backend->bddAnd(result.second,up4);
-    std::cout << "result of 1,2,3,4: " << result.first << " " << result.second.toString() << std::endl;
+    //std::cout << "result of 1,2,3,4: " << result.first << " " << result.second.toString() << std::endl;
     ok = ok && result.second._bddP == bddOne;
     ImpP impP = result.second._impP;
     ok = ok && impP->getPosImp(9);
-    backend->printClause(c1);
-    backend->printClause(c2);
-    backend->printClause(c3);
-    backend->printClause(c4);
+    //backend->printClause(c1);
+    //backend->printClause(c2);
+    //backend->printClause(c3);
+    //backend->printClause(c4);
     backend->debug();
     return ok;
 }

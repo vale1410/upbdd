@@ -1,6 +1,7 @@
 #ifndef common_h
 #define common_h
 
+#include <boost/foreach.hpp>
 #include <vector>
 
 #define impOne NULL
@@ -13,6 +14,7 @@ typedef unsigned int Block;
 typedef int Variable;
 
 typedef std::vector<Variable> Clause;
+typedef std::vector<Clause> RawProblem;
 
 enum Feedback { UNSAT, SAT, BREAK };
 

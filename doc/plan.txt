@@ -1,7 +1,6 @@
 today: 
 
 next: 
-[] read DIMACS files into class Problem containing vector<Clause>
 [] Makefile debugging. why is he rebuilding everything everytime? dont understand...
 
 unordered: 
@@ -15,6 +14,7 @@ unordered:
 * conjunction of initBdds smarter: if variable all the same -> conjunct
 
 done:
+[done] read DIMACS files into class Problem containing vector<Clause>. use boost::tokenizer, boost::lexical_cast
 [done] : impliedLevel
 [done] : makeNewImpWithBit / in impStore
 [done] : finish bddAnd, test suite
