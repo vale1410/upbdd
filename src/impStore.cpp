@@ -52,8 +52,6 @@ ImpP ImpStore::impSubtraction(ImpP a, ImpP b) {
                       a->getPos() ^ (a->getPos() & b->getPos()),
                       a->getNeg() ^ (a->getNeg() & b->getNeg()),
                       impOne);
-        //(a->getPos() ^ (a->getPos() & b->getPos()));
-        //(a->getNeg() ^ (a->getNeg() & b->getNeg()));
         imp._nextP = impSubtraction(a->_nextP,b->_nextP);
         return add(imp);
     } else if (a->_block < b->_block) {
@@ -103,7 +101,7 @@ ImpReturn ImpStore::impUnion(ImpP a, ImpP b) {
                   a->getPos() | b->getPos(),
                   a->getNeg() | b->getNeg(),
                   impOne);
-        if(imp.getPos().to_ulong() & imp.getNeg().to_ulong()) {
+        if((imp.getPos() & imp.getNeg()).any()) {
             result.first = UNSAT;
             return result;
         } else {
@@ -156,22 +154,26 @@ bool ImpStore::impliedLevel(ImpP impP, Level level) {
 }
 
 ImpP ImpStore::adjustLevel(ImpP impP, Level level) const {
-    const unsigned int block = level/8 + 1;
-    if (impP == impOne || block == impP->_block) {
+    if (impP == impOne) {
         return impP;
     } else {
-        return adjustLevel(impP->_nextP,level);
+        return impP->adjustLevel(level);
     }
 }
         
 /*
- * precondition: impP->_block == level/8 + 1
+ * precondition: impP->_block <= level/8 + 1
  *
  */
 ImpP ImpStore::makeNewImpWithLevel(ImpP impP, Level level, bool direction) {
     Imp newImp(0,0x0000,impOne);
     if (impP != impOne) {
-        newImp = *impP;
+        if (impP->_block == level/8 + 1) {
+            newImp = *impP;
+        } else {
+            newImp._block = level/8 + 1;
+            newImp._nextP = impP;
+        }
     } else {
         newImp._block = level/8 + 1;
         newImp._nextP = impOne;

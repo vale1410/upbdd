@@ -44,6 +44,8 @@ class Imp {
         bool getNegImp(Level) const;
         bool getPosImp(Level) const;
 
+        ImpP adjustLevel(Level) const;
+
         std::string toString() const;
 
         void printImp();

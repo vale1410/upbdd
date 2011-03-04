@@ -12,7 +12,7 @@ void testHashFunction();
 int main () 
 {
     //testSizes();
-    //testImp();
+    testImp();
     testBdd();
     //testHashFunction();
 } 
@@ -28,7 +28,7 @@ bool testBdd1() {
     Bdd bdd2(3,bddOne,bddOne,iP1,iP2); 
     UpBdd upbdd1 = backend->add(bdd1);
     UpBdd upbdd2 = backend->add(bdd2);
-    backend->debug();
+    //backend->debug();
     bool ok = upbdd1._bddP == bddOne && upbdd1._impP == iP1;
     return ok && before + 1 == backend->sizeBdd();
 }
@@ -44,8 +44,8 @@ bool testBdd2() {
     UpBdd upBdd1 = backend->add(bdd1);
     UpBdd upBdd2 = backend->add(bdd2);
     BddReturn result = backend->bddAnd(upBdd1,upBdd2,impOne);
-    std::cout << "result is: " << result.first << " " << result.second.toString() << std::endl;
-    backend->debug();
+    //std::cout << "result is: " << result.first << " " << result.second.toString() << std::endl;
+    //backend->debug();
     return true;
 }
 
@@ -65,8 +65,8 @@ bool testBdd3() {
     UpBdd upBdd3 = backend->add(bdd3);
     //UpBdd upBdd4(iP3,bddOne);
     BddReturn result = backend->bddAnd(upBdd2,upBdd3,impOne);
-    std::cout << "result is: " << result.first << " " << result.second.toString() << std::endl;
-    backend->debug();
+    //std::cout << "result is: " << result.first << " " << result.second.toString() << std::endl;
+    //backend->debug();
     return result.first == SAT;
 }
 
@@ -87,33 +87,128 @@ bool testBdd4() {
     //UpBdd upBdd4(iP3,bddOne);
     BddReturn result = backend->bddAnd(upBdd2,upBdd3,iP3);
     UpBdd re(result.second);
-    std::cout << "result is: " << result.first << " " << re.toString() << std::endl;
-    backend->debug();
+    //std::cout << "result is: " << result.first << " " << re.toString() << std::endl;
+    //backend->debug();
     return re._bddP == bddOne && re._impP->getPosImp(1) && re._impP->getPosImp(2) && !re._impP->getPosImp(3);
 }
 
 bool testBdd5() {
+    bool ok = true; 
     Backend::SP backend(new Backend(20,20));
     Clause c1;
-    c1.push_back(2);
-    c1.push_back(-5);
-    c1.push_back(9);
-    c1.push_back(-127);
+    c1.push_back(1);
+    c1.push_back(-2);
+    Clause c2;
+    c2.push_back(-1);
+    c2.push_back(2);
+    Clause c3;
+    c3.push_back(-1);
+    c3.push_back(-2);
+    Clause c4;
+    c4.push_back(1);
+    c4.push_back(2);
     UpBdd up1 = backend->makeClause(c1);
-    backend->printClause(c1);
-    backend->debug();
-    return true;
+    UpBdd up2 = backend->makeClause(c2);
+    UpBdd up3 = backend->makeClause(c3);
+    UpBdd up4 = backend->makeClause(c4);
+    BddReturn result = backend->bddAnd(up1,up2);
+    result = backend->bddAnd(result.second,up3);
+    ok = ok && result.second._bddP == bddOne;
+    result = backend->bddAnd(result.second,up4);
+    ok = ok && result.first == UNSAT;
+    //std::cout << "result is: " << result.first << std::endl << " " << result.second.toString() << std::endl;
+    //backend->printClause(c1);
+    //backend->printClause(c2);
+    //backend->printClause(c3);
+    //backend->printClause(c4);
+    //backend->debug();
+    return ok;
 }
 
 
+bool testBdd6() {
+    bool ok = true; 
+    Backend::SP backend(new Backend(20,20));
+    Clause c1;
+    c1.push_back(1);
+    c1.push_back(-20);
+    Clause c2;
+    c2.push_back(-1);
+    c2.push_back(20);
+    Clause c3;
+    c3.push_back(-1);
+    c3.push_back(-20);
+    Clause c4;
+    c4.push_back(1);
+    c4.push_back(20);
+    UpBdd up1 = backend->makeClause(c1);
+    UpBdd up2 = backend->makeClause(c2);
+    UpBdd up3 = backend->makeClause(c3);
+    UpBdd up4 = backend->makeClause(c4);
+    BddReturn result = backend->bddAnd(up1,up2);
+    //std::cout << "result of 1,2: " << result.first << " " << result.second.toString() << std::endl;
+    result = backend->bddAnd(result.second,up3);
+    //std::cout << "result of 1,2,3: " << result.first << " " << result.second.toString() << std::endl;
+    ok = ok && result.second._bddP == bddOne;
+    result = backend->bddAnd(result.second,up4);
+    //std::cout << "result of 1,2,3,4: " << result.first << std::endl;
+    ok = ok && result.first == UNSAT;
+    //backend->printClause(c1);
+    //backend->printClause(c2);
+    //backend->printClause(c3);
+    //backend->printClause(c4);
+    //backend->debug();
+    return ok;
+}
+
+bool testBdd7() {
+    bool ok = true; 
+    Backend::SP backend(new Backend(20,20));
+    Clause c1;
+    c1.push_back(1);
+    c1.push_back(9);
+    c1.push_back(-20);
+    Clause c2;
+    c2.push_back(-1);
+    c2.push_back(9);
+    c2.push_back(20);
+    Clause c3;
+    c3.push_back(-1);
+    c3.push_back(9);
+    c3.push_back(-20);
+    Clause c4;
+    c4.push_back(1);
+    c4.push_back(9);
+    c4.push_back(20);
+    UpBdd up1 = backend->makeClause(c1);
+    UpBdd up2 = backend->makeClause(c2);
+    UpBdd up3 = backend->makeClause(c3);
+    UpBdd up4 = backend->makeClause(c4);
+    BddReturn result = backend->bddAnd(up1,up2);
+    std::cout << "result of 1,2: " << result.first << " " << result.second.toString() << std::endl;
+    result = backend->bddAnd(result.second,up3);
+    std::cout << "result of 1,2,3: " << result.first << " " << result.second.toString() << std::endl;
+    result = backend->bddAnd(result.second,up4);
+    std::cout << "result of 1,2,3,4: " << result.first << " " << result.second.toString() << std::endl;
+    ok = ok && result.second._bddP == bddOne;
+    ImpP impP = result.second._impP;
+    ok = ok && impP->getPosImp(9);
+    backend->printClause(c1);
+    backend->printClause(c2);
+    backend->printClause(c3);
+    backend->printClause(c4);
+    backend->debug();
+    return ok;
+}
+
 void testBdd() {
-    //std::cout << "testBdd 1: " << testBdd1() << std::endl;
-    //std::cout << "testBdd 2: " << testBdd2() << std::endl;
-    //std::cout << "testBdd 3: " << testBdd3() << std::endl;
-    //std::cout << "testBdd 4: " << testBdd4() << std::endl;
+    std::cout << "testBdd 1: " << testBdd1() << std::endl;
+    std::cout << "testBdd 2: " << testBdd2() << std::endl;
+    std::cout << "testBdd 3: " << testBdd3() << std::endl;
+    std::cout << "testBdd 4: " << testBdd4() << std::endl;
     std::cout << "testBdd 5: " << testBdd5() << std::endl;
-    //std::cout << "testBdd 6: " << testBdd6() << std::endl;
-    //std::cout << "testBdd 7: " << testBdd6() << std::endl;
+    std::cout << "testBdd 6: " << testBdd6() << std::endl;
+    std::cout << "testBdd 7: " << testBdd7() << std::endl;
 }
 
 
@@ -284,7 +379,7 @@ bool testImp11() {
     ImpP iP6 = backend->impSubtraction(iP4,iP3);
     backend->impUnion(iP5,iP6);
     ok = ok;// & iP5 && iP6 && before;
-    backend->debug();
+    //backend->debug();
     return ok;
 }
 
@@ -314,7 +409,7 @@ bool testImp12() {
     if (iP7.first == SAT ) {
         backend->impUnion(iP7.second,iP5);
     }
-    backend->debug();
+    //backend->debug();
     return ok;
 }
 

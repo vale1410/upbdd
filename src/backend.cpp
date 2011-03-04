@@ -68,6 +68,10 @@ Level Backend::maxLevel(BddP a,BddP b) {
 } 
 
 
+BddReturn Backend::bddAnd(UpBdd a, UpBdd b) {
+    return bddAnd(a, b, impOne);
+}
+
 BddReturn Backend::bddAnd(UpBdd a, UpBdd b, ImpP impP) {
     BddReturn result(SAT,UpBdd(impOne,bddOne));
     ImpReturn impR = impUnion(a._impP,b._impP,impP);
@@ -104,7 +108,7 @@ BddReturn Backend::bddAnd(UpBdd a, UpBdd b, ImpP impP) {
                     highReturn.second._impP = impStore.makeNewImpWithLevel(highReturn.second._impP, level, true);  
                     result = highReturn;
                 } else if (highReturn.first == UNSAT && lowReturn.first == SAT) {
-                    lowReturn.second._impP = impStore.makeNewImpWithLevel(highReturn.second._impP, level, false);  
+                    lowReturn.second._impP = impStore.makeNewImpWithLevel(lowReturn.second._impP, level, false);  
                     result = lowReturn;
                 }  
             }
@@ -113,16 +117,31 @@ BddReturn Backend::bddAnd(UpBdd a, UpBdd b, ImpP impP) {
     return result;
 }
 
+
+// TODO: refactoring: make global impOne and bddOne with level 0
+// this way 2 less if#s
 BddReturn Backend::bddAndCall(const BddP a, const BddP b, const ImpP impP, const bool direction) {
     UpBdd aUpBdd(impOne,a);
     UpBdd bUpBdd(impOne,b);
-    if (b == bddOne || a->_level > b->_level) {
+    if (b == bddOne) {
         if (direction) {
             return bddAnd(a->_high, bUpBdd, impP);
         } else {
             return bddAnd(a->_low, bUpBdd, impP);
         }
-    } else if (a == bddOne || a->_level < b->_level) {
+    } else if (a == bddOne) {
+        if (direction) {
+            return bddAnd(aUpBdd, b->_high, impP);
+        } else {
+            return bddAnd(aUpBdd, b->_low, impP);
+        }
+    } else if (a->_level > b->_level) {
+        if (direction) {
+            return bddAnd(a->_high, bUpBdd, impP);
+        } else {
+            return bddAnd(a->_low, bUpBdd, impP);
+        }
+    } else if (a->_level < b->_level) {
         if (direction) {
             return bddAnd(aUpBdd, b->_high, impP);
         } else {

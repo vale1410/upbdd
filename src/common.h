@@ -14,6 +14,6 @@ typedef int Variable;
 
 typedef std::vector<Variable> Clause;
 
-enum Feedback { SAT, UNSAT, BREAK };
+enum Feedback { UNSAT, SAT, BREAK };
 
 #endif

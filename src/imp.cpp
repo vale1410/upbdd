@@ -76,11 +76,11 @@ void Imp::setNeg(size_t pos, bool b) {
 }
 
 bool Imp::getNegImp(Level level) const {
-    return getNeg(8-level2pos(level));
+    return adjustLevel(level)->getNeg(8-level2pos(level));
 }
 
 bool Imp::getPosImp(Level level) const {
-    return getPos(8-level2pos(level));
+    return adjustLevel(level)->getPos(8-level2pos(level));
 }
 
 void Imp::setNegImp(Level level) {
@@ -109,8 +109,17 @@ void Imp::printImp()
     std::cout << "imp: " << toString() << "\t hash: " << hasher(*this) << std::endl;
 }
 
+
+ImpP Imp::adjustLevel(Level level) const {
+    if (level2block(level) == _block) {
+        return const_cast<ImpP>(this);
+    } else {
+        return _nextP->adjustLevel(level);
+    }
+}
+
 Block Imp::level2block(Level level) const {
-    size_t block = level/8 + 1;
+    Block block = level/8 + 1;
     return block;
 }
 

@@ -33,6 +33,7 @@ class Backend {
 
       Level maxLevel(BddP a,BddP b);
 
+      BddReturn bddAnd(UpBdd, UpBdd);
       BddReturn bddAnd(UpBdd, UpBdd, ImpP);
       BddReturn bddAndCall(const BddP, const BddP, const ImpP, const bool direction);
 
