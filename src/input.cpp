@@ -7,7 +7,7 @@
 using namespace std;
 
 void parseProblem(string file, RawProblem& problem) {
-    ifstream in("data/test.txt");
+    ifstream in(file.c_str());
     if (in.is_open()) {
         cout << "c file opened" << endl;
     } else {
@@ -44,16 +44,4 @@ void parseProblem(string file, RawProblem& problem) {
     in.close();
     cout << "c finished parsing!" << endl << endl;
     cout << endl;
-}
-
-int main() {
-    RawProblem problem; 
-    parseProblem("data/test.txt", problem);
-    cout << "c what did I read: " << endl;
-    foreach(Clause clause, problem) {
-        foreach(Variable variable, clause) {
-                cout << variable << " ";
-        };
-        cout << endl;
-    };
 }

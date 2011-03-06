@@ -1,5 +1,6 @@
 c hallo
 c this is some kind of comment
 1 2 0
-1 -2 0
 -1 2 0
+1 -2 0
+-1 -2 0

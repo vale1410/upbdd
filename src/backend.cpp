@@ -87,16 +87,9 @@ BddReturn Backend::bddAnd(UpBdd a, UpBdd b, ImpP impP) {
             result.second = UpBdd(impP,bddOne);        
         } else {
             const Level level = maxLevel(bddPa,bddPb);
-            impP = impStore.adjustLevel(impP,level); // might change impP
-
-            if (impStore.impliedLevel(impP,level) ) { // does the impP imply this level?
-                return bddAndCall(bddPa,bddPb,impP,impP->getPosImp(level));
-            } else if (bddPa == bddOne) {
-                result.first = SAT;
-                result.second = UpBdd(impP,bddPb);
-            } else if (bddPb == bddOne) {
-                result.first = SAT;
-                result.second = UpBdd(impP,bddPa);        
+            impP = impStore.adjustLevel(impP,level);
+            if (impStore.impliedLevel(impP,level) ) { 
+                result = bddAndCall(bddPa,bddPb,impP,impP->getPosImp(level));
             } else {
                 BddReturn highReturn = bddAndCall(bddPa,bddPb,impP,true);
                 BddReturn lowReturn  = bddAndCall(bddPa,bddPb,impP,false);

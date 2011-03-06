@@ -1,27 +1,29 @@
 today: 
 
-next: 
+next:                                                                                   
+[] make implication from "typedef vector<int> RawImplication".
+[] new tests with this ftypedef facilities of DIMACS files. rewrite the old tests, will make the list much shorter!
 [] Makefile debugging. why is he rebuilding everything everytime? dont understand...
 
 unordered: 
+* clean up namespaces: using namespace std; in common, remove in all buffers std::
 * find out about global bddOne and impOne. simplify some case analysis!
 * do the andBdd cache!
-* split into several files: imp, upbdd, backend, test, inout, 
 * sort vector of ints nicely
 * search stage 1: simple left first search, bitset with implications, bitset with decision, simple step, no feedback
 * search start 2: with feedback, n steps, rest BDD, as result
-* bddAND with rest (BREAK)
-* conjunction of initBdds smarter: if variable all the same -> conjunct
+* bddAND with BREAK
+* conjunction of initBdds smarter: if variable all the same -> conjunct. group of variables, init step
 
 done:
 [done] read DIMACS files into class Problem containing vector<Clause>. use boost::tokenizer, boost::lexical_cast
-[done] : impliedLevel
-[done] : makeNewImpWithBit / in impStore
-[done] : finish bddAnd, test suite
-[done] : adjustLevel ( in impStore )
+[done] impliedLevel
+[done] makeNewImpWithBit / in impStore
+[done] finish bddAnd, test suite
+[done] adjustLevel ( in impStore )
 [done] finish impliedLevel, and makeNewWithBit!
 [done] make a first simple test!
 [done] plane: impSubtraction. for that you can check if not exists already for bitest
 [done] first day: add(Bdd) finished
-[done] : test add(Bdd)
-[done] : bddAnd ... (simple,with rest)
+[done] test add(Bdd)
+[done] bddAnd ... (simple,with rest)

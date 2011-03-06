@@ -10,12 +10,11 @@ all: start
 start: upbdd
 	./bin/start
 
-upbdd: bdd.o imp.o impStore.o bddStore.o backend.o
-	$(CC) src/test.cpp bin/bddStore.o bin/impStore.o bin/bdd.o bin/imp.o bin/backend.o -o bin/start
+upbdd: bdd.o imp.o impStore.o bddStore.o backend.o input.o
+	$(CC) src/test.cpp bin/bddStore.o bin/impStore.o bin/bdd.o bin/imp.o bin/backend.o bin/input.o -o bin/start
 
-input: src/input.cpp 
-	$(CC) src/input.cpp -o bin/input
-	./bin/input
+input.o: src/input.cpp input.h
+	$(CC) -o bin/input.o -c src/input.cpp  
 
 imp.o: src/imp.cpp common.h imp.h
 	$(CC) -o bin/imp.o -c src/imp.cpp 
@@ -38,6 +37,7 @@ impStore.h: src/impStore.h
 bddStore.h: src/bddStore.h
 imp.h: src/imp.h
 bdd.h: src/bdd.h
+input.h: src/input.h
 
 clean:
 	rm -fr bin/*

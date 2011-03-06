@@ -3,20 +3,50 @@
 #include "bddStore.h"
 #include "impStore.h"
 #include "backend.h"
+#include "input.h"
+
+using namespace std;
 
 void testSizes();
 void testImp();
 void testBdd();
+void testInput();
 void testHashFunction();
 
 int main () 
 {
-    testSizes();
+    //testSizes();
+    testInput();
     //testImp();
-    testBdd();
+    //testBdd();
     //testHashFunction();
     return 0;
 } 
+
+void testInput() {
+    Backend::SP backend(new Backend(20,20));
+    RawProblem problem; 
+    parseProblem("data/test.txt", problem);
+    cout << "c what did I read: " << endl;
+    UpBdd up;
+    foreach(Clause clause, problem) {
+        foreach(Variable variable, clause) {
+                cout << variable << " ";
+        };
+        cout << endl;
+        UpBdd tmp = backend->makeClause(clause);
+        BddReturn result = backend->bddAnd(up,tmp);
+        cout << "result of " << up.toString() << " and " << tmp.toString();
+        if (result.first == SAT) {
+            cout << " success upbdd: " << result.second.toString() << endl;
+            up = result.second;
+        } else {
+            cout << " UNSAT!" << endl;
+        }
+    };
+   backend->debug(); 
+}
+
 
 bool testBdd1() {
     Backend::SP backend(new Backend(20,20));
@@ -45,7 +75,7 @@ bool testBdd2() {
     UpBdd upBdd1 = backend->add(bdd1);
     UpBdd upBdd2 = backend->add(bdd2);
     BddReturn result = backend->bddAnd(upBdd1,upBdd2,impOne);
-    //std::cout << "result is: " << result.first << " " << result.second.toString() << std::endl;
+    //cout << "result is: " << result.first << " " << result.second.toString() << endl;
     //backend->debug();
     return true;
 }
@@ -66,7 +96,7 @@ bool testBdd3() {
     UpBdd upBdd3 = backend->add(bdd3);
     //UpBdd upBdd4(iP3,bddOne);
     BddReturn result = backend->bddAnd(upBdd2,upBdd3,impOne);
-    //std::cout << "result is: " << result.first << " " << result.second.toString() << std::endl;
+    //cout << "result is: " << result.first << " " << result.second.toString() << endl;
     //backend->debug();
     return result.first == SAT;
 }
@@ -88,7 +118,7 @@ bool testBdd4() {
     //UpBdd upBdd4(iP3,bddOne);
     BddReturn result = backend->bddAnd(upBdd2,upBdd3,iP3);
     UpBdd re(result.second);
-    //std::cout << "result is: " << result.first << " " << re.toString() << std::endl;
+    //cout << "result is: " << result.first << " " << re.toString() << endl;
     //backend->debug();
     return re._bddP == bddOne && re._impP->getPosImp(1) && re._impP->getPosImp(2) && !re._impP->getPosImp(3);
 }
@@ -117,7 +147,7 @@ bool testBdd5() {
     ok = ok && result.second._bddP == bddOne;
     result = backend->bddAnd(result.second,up4);
     ok = ok && result.first == UNSAT;
-    //std::cout << "result is: " << result.first << std::endl << " " << result.second.toString() << std::endl;
+    //cout << "result is: " << result.first << endl << " " << result.second.toString() << endl;
     //backend->printClause(c1);
     //backend->printClause(c2);
     //backend->printClause(c3);
@@ -147,12 +177,12 @@ bool testBdd6() {
     UpBdd up3 = backend->makeClause(c3);
     UpBdd up4 = backend->makeClause(c4);
     BddReturn result = backend->bddAnd(up1,up2);
-    //std::cout << "result of 1,2: " << result.first << " " << result.second.toString() << std::endl;
+    //cout << "result of 1,2: " << result.first << " " << result.second.toString() << endl;
     result = backend->bddAnd(result.second,up3);
-    //std::cout << "result of 1,2,3: " << result.first << " " << result.second.toString() << std::endl;
+    //cout << "result of 1,2,3: " << result.first << " " << result.second.toString() << endl;
     ok = ok && result.second._bddP == bddOne;
     result = backend->bddAnd(result.second,up4);
-    //std::cout << "result of 1,2,3,4: " << result.first << std::endl;
+    //cout << "result of 1,2,3,4: " << result.first << endl;
     ok = ok && result.first == UNSAT;
     //backend->printClause(c1);
     //backend->printClause(c2);
@@ -186,11 +216,11 @@ bool testBdd7() {
     UpBdd up3 = backend->makeClause(c3);
     UpBdd up4 = backend->makeClause(c4);
     BddReturn result = backend->bddAnd(up1,up2);
-    //std::cout << "result of 1,2: " << result.first << " " << result.second.toString() << std::endl;
+    //cout << "result of 1,2: " << result.first << " " << result.second.toString() << endl;
     result = backend->bddAnd(result.second,up3);
-    //std::cout << "result of 1,2,3: " << result.first << " " << result.second.toString() << std::endl;
+    //cout << "result of 1,2,3: " << result.first << " " << result.second.toString() << endl;
     result = backend->bddAnd(result.second,up4);
-    //std::cout << "result of 1,2,3,4: " << result.first << " " << result.second.toString() << std::endl;
+    //cout << "result of 1,2,3,4: " << result.first << " " << result.second.toString() << endl;
     ok = ok && result.second._bddP == bddOne;
     ImpP impP = result.second._impP;
     ok = ok && impP->getPosImp(9);
@@ -203,13 +233,13 @@ bool testBdd7() {
 }
 
 void testBdd() {
-    std::cout << "testBdd 1: " << testBdd1() << std::endl;
-    std::cout << "testBdd 2: " << testBdd2() << std::endl;
-    std::cout << "testBdd 3: " << testBdd3() << std::endl;
-    std::cout << "testBdd 4: " << testBdd4() << std::endl;
-    std::cout << "testBdd 5: " << testBdd5() << std::endl;
-    std::cout << "testBdd 6: " << testBdd6() << std::endl;
-    std::cout << "testBdd 7: " << testBdd7() << std::endl;
+    cout << "testBdd 1: " << testBdd1() << endl;
+    cout << "testBdd 2: " << testBdd2() << endl;
+    cout << "testBdd 3: " << testBdd3() << endl;
+    cout << "testBdd 4: " << testBdd4() << endl;
+    cout << "testBdd 5: " << testBdd5() << endl;
+    cout << "testBdd 6: " << testBdd6() << endl;
+    cout << "testBdd 7: " << testBdd7() << endl;
 }
 
 
@@ -391,11 +421,11 @@ bool testImp12() {
     Imp i1(1,0x0100,impOne); 
     Imp i2(2,0xF000,impOne); 
     Imp i3(2,0xFF00,impOne); 
-    std::bitset<8> p(std::rand());
+    bitset<8> p(rand());
     Imp i4(1,p,0x00,impOne); 
-    p = std::rand();
+    p = rand();
     Imp i5(2,0x00,p,impOne); 
-    p = std::rand();
+    p = rand();
     Imp i6(2,p,0x00,impOne); 
     ImpP iP1 = backend->add(i1);
     ImpP iP2 = backend->add(i2);
@@ -415,51 +445,51 @@ bool testImp12() {
 }
 
 void testImp() {
-    std::cout << "testImp 1: " << testImp1() << std::endl;
-    std::cout << "testImp 2: " << testImp2() << std::endl;
-    std::cout << "testImp 3: " << testImp3() << std::endl;
-    std::cout << "testImp 4: " << testImp4() << std::endl;
-    std::cout << "testImp 5: " << testImp5() << std::endl;
-    std::cout << "testImp 6: " << testImp6() << std::endl;
-    std::cout << "testImp 7: " << testImp7() << std::endl;
-    std::cout << "testImp 8: " << testImp8() << std::endl;
-    std::cout << "testImp 9: " << testImp9() << std::endl;
-    std::cout << "testImp 10: " << testImp10() << std::endl;
-    std::cout << "testImp 11: " << testImp11() << std::endl;
-    std::cout << "testImp 12: " << testImp12() << std::endl;
+    cout << "testImp 1: " << testImp1() << endl;
+    cout << "testImp 2: " << testImp2() << endl;
+    cout << "testImp 3: " << testImp3() << endl;
+    cout << "testImp 4: " << testImp4() << endl;
+    cout << "testImp 5: " << testImp5() << endl;
+    cout << "testImp 6: " << testImp6() << endl;
+    cout << "testImp 7: " << testImp7() << endl;
+    cout << "testImp 8: " << testImp8() << endl;
+    cout << "testImp 9: " << testImp9() << endl;
+    cout << "testImp 10: " << testImp10() << endl;
+    cout << "testImp 11: " << testImp11() << endl;
+    cout << "testImp 12: " << testImp12() << endl;
 }
 
 void testSizes() {
     Level level = 123;
-    std::bitset<16> bits = 0xF00F;
+    bitset<16> bits = 0xF00F;
     Imp imp(level,bits,impOne);
     Bdd bdd(level,bddOne,bddOne,impOne,&imp);
     const UpBdd upbdd(&imp,&bdd);
     int a;
     long b=1234123;
     size_t c;
-    std::cout << "size of imp " << sizeof(imp) << std::endl;
-    std::cout << "size of bdd " << sizeof(bdd) << std::endl;
-    std::cout << "size of upbdd " << sizeof(upbdd) << std::endl;
-    std::cout << "size of imp.imp " << sizeof(imp._imp) << std::endl;
-    std::cout << "size of int " << sizeof(a) << std::endl;
-    std::cout << "size of long " << sizeof(b) << std::endl;
-    std::cout << "size of size_t " << sizeof(c) << std::endl;
-    std::cout << "where points bddOne " << bddOne << std::endl;
-    std::cout << "where points impOne " << impOne << std::endl;
+    cout << "size of imp " << sizeof(imp) << endl;
+    cout << "size of bdd " << sizeof(bdd) << endl;
+    cout << "size of upbdd " << sizeof(upbdd) << endl;
+    cout << "size of imp.imp " << sizeof(imp._imp) << endl;
+    cout << "size of int " << sizeof(a) << endl;
+    cout << "size of long " << sizeof(b) << endl;
+    cout << "size of size_t " << sizeof(c) << endl;
+    cout << "where points bddOne " << bddOne << endl;
+    cout << "where points impOne " << impOne << endl;
 }
 
 
 void testHashFunction() {
     size_t hash = 0; 
     boost::hash_combine(hash,1);
-    std::cout << hash << std::endl;
+    cout << hash << endl;
     boost::hash_combine(hash,2);
-    std::cout << hash << std::endl;
+    cout << hash << endl;
     boost::hash_combine(hash,3);
-    std::cout << hash << std::endl;
+    cout << hash << endl;
     boost::hash_combine(hash,0);
-    std::cout << hash << std::endl;
+    cout << hash << endl;
 }
 
 
