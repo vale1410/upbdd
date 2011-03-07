@@ -34,7 +34,11 @@ class ImpStore {
 
         ImpP makeNewImpWithLevel(ImpP, Level, bool direction);
         
+        ImpP makeNewImp(ImpP, Variable);
+        
         ImpP makeVar(Variable);
+
+
 
     private:
         ImpStoreT store;

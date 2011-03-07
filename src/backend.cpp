@@ -67,6 +67,14 @@ Level Backend::maxLevel(BddP a,BddP b) {
     }    
 } 
 
+BddReturn Backend::bddAnd(std::vector<UpBdd> ups) {
+    BddReturn tmp(SAT,UpBdd());
+    foreach(const UpBdd up, ups) {
+        if (tmp.first == SAT) {
+            tmp = bddAnd(tmp.second,up);
+        }
+    };
+    return tmp; }
 
 BddReturn Backend::bddAnd(UpBdd a, UpBdd b) {
     return bddAnd(a, b, impOne);
@@ -169,6 +177,24 @@ UpBdd Backend::makeClause(Clause clause) {
         };
     }
     return up;
+}
+
+std::vector<UpBdd> Backend::makeClauses(RawProblem problem) {
+    std::vector<UpBdd> result(problem.size());
+    int i = 0;
+    foreach(const Clause clause, problem) {
+        result[i] = makeClause(clause);
+        i++;
+    };
+    return result;
+}
+
+ImpP Backend::makeImplication(RawImplication implication) {
+    ImpP impP = impOne;
+    foreach(const Variable var, implication) {
+        impP = impStore.makeNewImp(impP,var);
+    };
+    return impP;
 }
 
 void Backend::printClause(Clause clause) {

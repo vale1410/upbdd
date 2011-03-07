@@ -185,11 +185,15 @@ ImpP ImpStore::makeNewImpWithLevel(ImpP impP, Level level, bool direction) {
     return add(newImp);
 }
 
-ImpP ImpStore::makeVar(Variable var) {
+ImpP ImpStore::makeNewImp(ImpP impP, Variable var) {
     if (var > 0) {
-        return makeNewImpWithLevel(impOne,var,true);
+        return makeNewImpWithLevel(impP,var,true);
     } else {
-        return makeNewImpWithLevel(impOne,-1*var,false);
+        return makeNewImpWithLevel(impP,-1*var,false);
     }
+}
+
+ImpP ImpStore::makeVar(Variable var) {
+    return makeNewImp(impOne, var);
 }
 

@@ -33,6 +33,7 @@ class Backend {
 
       Level maxLevel(BddP a,BddP b);
 
+      BddReturn bddAnd(std::vector< UpBdd >);
       BddReturn bddAnd(UpBdd, UpBdd);
       BddReturn bddAnd(UpBdd, UpBdd, ImpP);
       BddReturn bddAndCall(const BddP, const BddP, const ImpP, const bool direction);
@@ -43,6 +44,8 @@ class Backend {
        */
 
       UpBdd makeClause(Clause);
+      std::vector<UpBdd> makeClauses(RawProblem problem);
+      ImpP makeImplication(RawImplication);
       void printClause(Clause);
         
    private:

@@ -5,6 +5,8 @@
 #include "backend.h"
 #include "input.h"
 
+#include <boost/optional.hpp>
+
 using namespace std;
 
 void testSizes();
@@ -23,12 +25,23 @@ int main ()
     return 0;
 } 
 
-void testInput() {
+bool testInput1() {
+    typedef boost::optional<BddReturn> Item;
+    bool ok = true;
     Backend::SP backend(new Backend(20,20));
     RawProblem problem; 
     parseProblem("data/test.txt", problem);
     cout << "c what did I read: " << endl;
     UpBdd up;
+    vector<Item> results(problem.size());
+    Item item;
+    results.push_back(item);
+    item = Item(BddReturn(SAT,UpBdd(backend->makeImplication(problem[1]),bddOne)));
+    results.push_back(item);
+    item = Item(BddReturn(UNSAT,UpBdd()));
+    results.push_back(item);
+
+    int i = 0;
     foreach(Clause clause, problem) {
         foreach(Variable variable, clause) {
                 cout << variable << " ";
@@ -36,17 +49,26 @@ void testInput() {
         cout << endl;
         UpBdd tmp = backend->makeClause(clause);
         BddReturn result = backend->bddAnd(up,tmp);
-        cout << "result of " << up.toString() << " and " << tmp.toString();
+        cout << "bddAnd(" << up.toString() << ", " << tmp.toString();
         if (result.first == SAT) {
-            cout << " success upbdd: " << result.second.toString() << endl;
+            cout << ") = (SAT, " << result.second.toString() << ")\n";
             up = result.second;
         } else {
-            cout << " UNSAT!" << endl;
+            cout << ") =  UNSAT" << endl;
         }
-    };
+        cout << "boost optional " << results[i] << endl;
+        if (results[i]) {
+            ok = ok && *results[i] == result;
+        }
+        i++;
+   };
    backend->debug(); 
+   return ok;
 }
 
+void testInput(){
+    cout << "testInput 1: " << testInput1() << endl;
+}
 
 bool testBdd1() {
     Backend::SP backend(new Backend(20,20));
@@ -58,7 +80,6 @@ bool testBdd1() {
     Bdd bdd1(2,bddOne,bddOne,iP1,iP1); 
     Bdd bdd2(3,bddOne,bddOne,iP1,iP2); 
     UpBdd upbdd1 = backend->add(bdd1);
-    UpBdd upbdd2 = backend->add(bdd2);
     //backend->debug();
     bool ok = upbdd1._bddP == bddOne && upbdd1._impP == iP1;
     return ok && before + 1 == backend->sizeBdd();
