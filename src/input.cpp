@@ -9,9 +9,9 @@ using namespace std;
 void parseProblem(string file, RawProblem& problem) {
     ifstream in(file.c_str());
     if (in.is_open()) {
-        cout << "c file opened" << endl;
+        //cout << "c file opened" << endl;
     } else {
-        cout << "c file not found" << endl;
+        //cout << "c file not found" << endl;
     }
     string str;
     typedef boost::tokenizer<boost::char_separator<char> > Tok;
@@ -21,7 +21,7 @@ void parseProblem(string file, RawProblem& problem) {
     Tok tok(str,sep);
     while(!in.fail())
     {
-        cout << "c reading: " << str << endl;                                
+        //cout << "c reading: " << str << endl;                                
         tok = Tok(str,sep);
 
         Clause clause;
@@ -42,6 +42,6 @@ void parseProblem(string file, RawProblem& problem) {
         getline(in, str);
     }
     in.close();
-    cout << "c finished parsing!" << endl << endl;
+    //cout << "c finished parsing!" << endl << endl;
     cout << endl;
 }

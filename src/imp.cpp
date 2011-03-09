@@ -110,7 +110,7 @@ void Imp::printImp()
 
 
 ImpP Imp::adjustLevel(Level level) const {
-    if (level2block(level) == _block) {
+    if (level2block(level) >= _block) {
         return const_cast<ImpP>(this);
     } else {
         return _nextP->adjustLevel(level);
