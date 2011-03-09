@@ -185,7 +185,7 @@ ImpP ImpStore::makeNewImpWithLevel(ImpP impP, Level level, bool direction) {
     return add(newImp);
 }
 
-ImpP ImpStore::makeNewImp(ImpP impP, Variable var) {
+ImpP ImpStore::makeNewImp(ImpP impP, Literal var) {
     if (var > 0) {
         return makeNewImpWithLevel(impP,var,true);
     } else {
@@ -193,7 +193,7 @@ ImpP ImpStore::makeNewImp(ImpP impP, Variable var) {
     }
 }
 
-ImpP ImpStore::makeVar(Variable var) {
+ImpP ImpStore::makeVar(Literal var) {
     return makeNewImp(impOne, var);
 }
 

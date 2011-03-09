@@ -11,13 +11,13 @@
 
 typedef unsigned int Level;
 typedef unsigned int Block;
-typedef int Variable;
+typedef int Literal;
 
 /*
  * Clause and RawImplication are correctly ordered 1,-2,-3,4 ... 
  */
-typedef std::vector<Variable> RawImplication;
-typedef std::vector<Variable> Clause;
+typedef std::vector<Literal> RawImplication;
+typedef std::vector<Literal> Clause;
 typedef std::vector<Clause> RawProblem;
 
 enum Feedback { UNSAT, SAT }; //, BREAK };

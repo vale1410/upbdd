@@ -24,7 +24,6 @@ Imp::Imp(Block block, std::bitset<8> posImp, std::bitset<8> negImp, ImpP next):
     setNeg(negImp);
 }
 
-
 std::string Imp::toString() const {
     std::ostringstream oss;
     oss << this << " = " << "(" << _block <<  "," << posToString() <<  "," << negToString() << "," << _nextP <<  ")";

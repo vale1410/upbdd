@@ -28,7 +28,7 @@ void parseProblem(string file, RawProblem& problem) {
         bool is_clause = true;
         for(Tok::iterator beg=tok.begin(); is_clause && beg!=tok.end();++beg){
             if (*beg != "c") {
-                int var = boost::lexical_cast<Variable>(*beg);
+                int var = boost::lexical_cast<Literal>(*beg);
                 if (var != 0) clause.push_back(var);
             } else {
                 is_clause = false;

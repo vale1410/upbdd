@@ -5,7 +5,6 @@
 #include "backend.h"
 #include "input.h"
 
-#include <boost/optional.hpp>
 
 using namespace std;
 
@@ -26,24 +25,30 @@ int main ()
 } 
 
 bool testInput1() {
-    typedef boost::optional<BddReturn> Item;
     bool ok = true;
     Backend::SP backend(new Backend(20,20));
     RawProblem problem; 
-    parseProblem("data/test.txt", problem);
+    parseProblem("data/testInput1.cnf", problem);
     cout << "c what did I read: " << endl;
     UpBdd up;
-    vector<Item> results(problem.size());
-    Item item;
-    results.push_back(item);
-    item = Item(BddReturn(SAT,UpBdd(backend->makeImplication(problem[1]),bddOne)));
-    results.push_back(item);
-    item = Item(BddReturn(UNSAT,UpBdd()));
-    results.push_back(item);
+    vector<bool> has_results;
+    vector<BddReturn> results;
+    
+    has_results.push_back(false);
+    results.push_back(BddReturn());
+
+    has_results.push_back(false);
+    results.push_back(BddReturn());
+    
+    has_results.push_back(true);
+    results.push_back(BddReturn(SAT,UpBdd(backend->makeImplication(problem[0]),bddOne)));
+   
+    has_results.push_back(true);
+    results.push_back(BddReturn(UNSAT,UpBdd()));
 
     int i = 0;
     foreach(Clause clause, problem) {
-        foreach(Variable variable, clause) {
+        foreach(Literal variable, clause) {
                 cout << variable << " ";
         };
         cout << endl;
@@ -56,9 +61,8 @@ bool testInput1() {
         } else {
             cout << ") =  UNSAT" << endl;
         }
-        cout << "boost optional " << results[i] << endl;
-        if (results[i]) {
-            ok = ok && *results[i] == result;
+        if (has_results[i]) {
+            ok = ok && results[i] == result;
         }
         i++;
    };
@@ -66,8 +70,86 @@ bool testInput1() {
    return ok;
 }
 
+bool testInput2() {
+    bool ok = true;
+    Backend::SP backend(new Backend(20,20));
+    RawProblem problem; 
+    parseProblem("data/testInput2.cnf", problem);
+    cout << "c what did I read: " << endl;
+    UpBdd up;
+    vector<bool> has_results;
+    vector<BddReturn> results;
+    
+    has_results.push_back(false);
+    results.push_back(BddReturn());
+
+    has_results.push_back(false);
+    results.push_back(BddReturn());
+    
+    has_results.push_back(true);
+    results.push_back(BddReturn(SAT,UpBdd(backend->makeImplication(problem[0]),bddOne)));
+   
+    has_results.push_back(true);
+    results.push_back(BddReturn(UNSAT,UpBdd()));
+
+    int i = 0;
+    foreach(Clause clause, problem) {
+        foreach(Literal variable, clause) {
+                cout << variable << " ";
+        };
+        cout << endl;
+        UpBdd tmp = backend->makeClause(clause);
+        BddReturn result = backend->bddAnd(up,tmp);
+        cout << "bddAnd(" << up.toString() << ", " << tmp.toString();
+        if (result.first == SAT) {
+            cout << ") = (SAT, " << result.second.toString() << ")\n";
+            up = result.second;
+        } else {
+            cout << ") =  UNSAT" << endl;
+        }
+        if (has_results[i]) {
+            ok = ok && results[i] == result;
+        }
+        i++;
+   };
+   backend->debug(); 
+   return ok;
+}
+
+
+bool testInput3() {
+    bool ok = true;
+    Backend::SP backend(new Backend(20,20));
+    RawProblem problem; 
+    parseProblem("data/testInput3.cnf", problem);
+    cout << "c what did I read: " << endl;
+    UpBdd up;
+    vector<bool> has_results;
+    vector<BddReturn> results;
+    
+    foreach(Clause clause, problem) {
+        foreach(Literal variable, clause) {
+                cout << variable << " ";
+        };
+        cout << endl;
+        UpBdd tmp = backend->makeClause(clause);
+        BddReturn result = backend->bddAnd(up,tmp);
+        cout << "bddAnd(" << up.toString() << ", " << tmp.toString();
+        if (result.first == SAT) {
+            cout << ") = (SAT, " << result.second.toString() << ")\n";
+            up = result.second;
+        } else {
+            cout << ") =  UNSAT" << endl;
+        }
+   };
+   backend->debug(); 
+   return ok;
+}
+
 void testInput(){
     cout << "testInput 1: " << testInput1() << endl;
+    cout << "testInput 2: " << testInput2() << endl;
+    cout << "testInput 3: " << testInput2() << endl;
 }
 
 bool testBdd1() {

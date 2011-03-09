@@ -191,7 +191,7 @@ std::vector<UpBdd> Backend::makeClauses(RawProblem problem) {
 
 ImpP Backend::makeImplication(RawImplication implication) {
     ImpP impP = impOne;
-    foreach(const Variable var, implication) {
+    foreach(const Literal var, implication) {
         impP = impStore.makeNewImp(impP,var);
     };
     return impP;
