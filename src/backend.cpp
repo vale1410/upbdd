@@ -102,7 +102,9 @@ BddReturn Backend::bddAnd(UpBdd a, UpBdd b, ImpP impP) {
                 BddReturn highReturn = bddAndCall(bddPa,bddPb,impP,true);
                 BddReturn lowReturn  = bddAndCall(bddPa,bddPb,impP,false);
                 if (highReturn.first == SAT && lowReturn.first == SAT) {
-                    result.first = SAT; Bdd bdd(level, highReturn.second, lowReturn.second); result.second = add(bdd);
+                    result.first = SAT; 
+                    Bdd bdd(level, highReturn.second, lowReturn.second); 
+                    result.second = add(bdd);
                 } else if (highReturn.first == UNSAT && lowReturn.first == UNSAT) {
                     result.first = UNSAT;
                 } else if (highReturn.first == SAT && lowReturn.first == UNSAT) {

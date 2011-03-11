@@ -49,6 +49,8 @@ class Imp {
         std::string toString() const;
 
         void printImp();
+        
+        Block level2block(Level level) const;
     
     private:
 
@@ -68,7 +70,6 @@ class Imp {
         void setNeg(std::bitset<8> bits);
         
         size_t level2pos(Level level) const;
-        Block level2block(Level level) const;
         Level pos2level(size_t pos) const;
         
         std::string posToString() const;

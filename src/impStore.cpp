@@ -56,7 +56,9 @@ ImpP ImpStore::impSubtraction(ImpP a, ImpP b) {
     } else if (a->_block < b->_block) {
         return impSubtraction(a,b->_nextP);
     } else {
-        return impSubtraction(a->_nextP,b);
+        Imp imp(*a);
+        imp._nextP = impSubtraction(a->_nextP,b);
+        return add(imp);
     }
 }
 
@@ -148,7 +150,7 @@ bool ImpStore::impliedLevel(ImpP impP, Level level) {
     if (impP == impOne) {
         return false;
     } else {
-        return impP->getPosImp(level) || impP->getNegImp(level);
+        return impP->_block == impP->level2block(level) && (impP->getPosImp(level) || impP->getNegImp(level));
     }
 }
 

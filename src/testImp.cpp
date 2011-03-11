@@ -210,6 +210,22 @@ bool testImp12() {
     return ok;
 }
 
+bool testImp13() {
+    bool ok = true;
+    Backend::SP backend(new Backend(20,20));
+    RawImplication imp;
+    imp.push_back(1);
+    ImpP iP1 = backend->makeImplication(imp);
+    imp.push_back(10);
+    ImpP iP2 = backend->makeImplication(imp);
+    imp.clear();
+    imp.push_back(10);
+    ImpP iP3 = backend->makeImplication(imp);
+    ImpP output = backend->impSubtraction(iP2,iP1);
+    //backend->debug();
+    return ok && output == iP3;
+}
+
 void testImp() {
     cout << "testImp 1: " << testImp1() << endl;
     cout << "testImp 2: " << testImp2() << endl;
@@ -223,6 +239,7 @@ void testImp() {
     cout << "testImp 10: " << testImp10() << endl;
     cout << "testImp 11: " << testImp11() << endl;
     cout << "testImp 12: " << testImp12() << endl;
+    cout << "testImp 13: " << testImp13() << endl;
 }
 
 

@@ -118,8 +118,7 @@ ImpP Imp::adjustLevel(Level level) const {
 }
 
 Block Imp::level2block(Level level) const {
-    Block block = level/8 + 1;
-    return block;
+    return level/8 + 1; 
 }
 
 size_t Imp::level2pos(Level level) const {

@@ -18,6 +18,7 @@ bool testBdd1() {
     Bdd bdd1(2,bddOne,bddOne,iP1,iP1); 
     Bdd bdd2(3,bddOne,bddOne,iP1,iP2); 
     UpBdd upbdd1 = backend->add(bdd1);
+    backend->add(bdd2);
     //backend->debug();
     bool ok = upbdd1._bddP == bddOne && upbdd1._impP == iP1;
     return ok && before + 1 == backend->sizeBdd();
@@ -187,7 +188,7 @@ bool testBdd7() {
     //backend->printClause(c2);
     //backend->printClause(c3);
     //backend->printClause(c4);
-    backend->debug();
+    //backend->debug();
     return ok;
 }
 

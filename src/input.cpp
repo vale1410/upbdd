@@ -43,5 +43,5 @@ void parseProblem(string file, RawProblem& problem) {
     }
     in.close();
     //cout << "c finished parsing!" << endl << endl;
-    cout << endl;
+    //cout << endl;
 }

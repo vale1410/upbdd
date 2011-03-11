@@ -13,7 +13,7 @@ bool testInput1() {
     Backend::SP backend(new Backend(20,20));
     RawProblem problem; 
     parseProblem("data/testInput1.cnf", problem);
-    cout << "c what did I read: " << endl;
+    //cout << "c what did I read: " << endl;
     UpBdd up;
     vector<bool> has_results;
     vector<BddReturn> results;
@@ -32,10 +32,6 @@ bool testInput1() {
 
     int i = 0;
     foreach(Clause clause, problem) {
-        foreach(Literal variable, clause) {
-                cout << variable << " ";
-        };
-        cout << endl;
         UpBdd tmp = backend->makeClause(clause);
         BddReturn result = backend->bddAnd(up,tmp);
         //cout << "bddAnd(" << up.toString() << ", " << tmp.toString();
@@ -78,10 +74,6 @@ bool testInput2() {
 
     int i = 0;
     foreach(Clause clause, problem) {
-        foreach(Literal variable, clause) {
-                cout << variable << " ";
-        };
-        cout << endl;
         UpBdd tmp = backend->makeClause(clause);
         BddReturn result = backend->bddAnd(up,tmp);
         //cout << "bddAnd(" << up.toString() << ", " << tmp.toString();
@@ -105,46 +97,41 @@ bool testInput3() {
     Backend::SP backend(new Backend(20,20));
     RawProblem problem; 
     parseProblem("data/testInput3.cnf", problem);
-    cout << "c what did I read: " << endl;
+    //cout << "c what did I read: " << endl;
     UpBdd up;
     vector<bool> has_results;
     vector<BddReturn> results;
     
     foreach(Clause clause, problem) {
-        foreach(Literal variable, clause) {
-                cout << variable << " ";
-        };
-        cout << endl;
         UpBdd tmp = backend->makeClause(clause);
         BddReturn result = backend->bddAnd(up,tmp);
-        cout << "bddAnd(" << up.toString() << ", " << tmp.toString();
-        if (result.first == SAT) {
-            cout << ") = (SAT, " << result.second.toString() << ")\n";
-            up = result.second;
-        } else {
-            cout << ") =  UNSAT" << endl;
-        }
+        //cout << "bddAnd(" << up.toString() << ", " << tmp.toString();
+        //if (result.first == SAT) {
+        //    cout << ") = (SAT, " << result.second.toString() << ")\n";
+        //    up = result.second;
+        //} else {
+        //    cout << ") =  UNSAT" << endl;
+        //}
    };
-   backend->debug(); 
+   //backend->debug(); 
    return ok;
 }
 
-UpBdd testInput4help(Backend::SP backend, RawProblem problem) {
+UpBdd conjunctRawProblem(Backend::SP backend, RawProblem problem) {
     UpBdd up;
     foreach(Clause clause, problem) {
         UpBdd tmp = backend->makeClause(clause);
         BddReturn result = backend->bddAnd(up,tmp);
-        cout << "bddAnd(" << up.toString() << ", " << tmp.toString();
-        if (result.first == SAT) {
-            cout << ") = (SAT, " << result.second.toString() << ")\n";
-            up = result.second;
-        } else {
-            cout << ") =  UNSAT" << endl;
-        }
+        //cout << "bddAnd(" << up.toString() << ", " << tmp.toString();
+        //if (result.first == SAT) {
+        //    cout << ") = (SAT, " << result.second.toString() << ")\n";
+        //    up = result.second;
+        //} else {
+        //    cout << ") =  UNSAT" << endl;
+        //}
    };
    return up;
 }
-    
 
 bool testInput4() {
     bool ok = true;
@@ -157,23 +144,49 @@ bool testInput4() {
     parseProblem("data/testInput4_2.cnf", p2);
     parseProblem("data/testInput4_3.cnf", p3);
     parseProblem("data/testInput4_4.cnf", p4);
-    cout << "4_1\n";
-    UpBdd up1 = testInput4help(backend, p1);
-    cout << "4_2\n";
-    //UpBdd up2 = testInput4help(backend, p2);
-    cout << "4_3\n";
-    UpBdd up3 = testInput4help(backend, p3);
-    cout << "4_4\n";
-    //UpBdd up4 = testInput4help(backend, p4);
-    ok = ok && up1 == up3; //&& up2 == up3 && up3 == up4;
-    backend->debug(); 
+    //cout << "4_1\n";
+    UpBdd up1 = conjunctRawProblem(backend, p1);
+    //cout << "4_2\n";
+    UpBdd up2 = conjunctRawProblem(backend, p2);
+    //cout << "4_3\n";
+    UpBdd up3 = conjunctRawProblem(backend, p3);
+    //cout << "4_4\n";
+    UpBdd up4 = conjunctRawProblem(backend, p4);
+    ok = ok && up1 == up3 && up2 == up3 && up3 == up4;
+    //backend->debug(); 
+    return ok;
+}
+    
+
+bool testInput5() {
+    bool ok = true;
+    Backend::SP backend(new Backend(20,20));
+    RawProblem p1; 
+    RawProblem p2; 
+    RawProblem p3; 
+    RawProblem p4; 
+    parseProblem("data/testInput5_1.cnf", p1);
+    parseProblem("data/testInput5_2.cnf", p2);
+    parseProblem("data/testInput5_3.cnf", p3);
+    parseProblem("data/testInput5_4.cnf", p4);
+    //cout << "5_1\n";
+    UpBdd up1 = conjunctRawProblem(backend, p1);
+    //cout << "5_2\n";
+    UpBdd up2 = conjunctRawProblem(backend, p2);
+    //cout << "5_3\n";
+    UpBdd up3 = conjunctRawProblem(backend, p3);
+    //cout << "5_4\n";
+    UpBdd up4 = conjunctRawProblem(backend, p4);
+    ok = ok && up1 == up2 && up2 == up3 && up3 == up4;
+    //backend->debug(); 
     return ok;
 }
 
 
 void testInput(){
-    //cout << "testInput 1: " << testInput1() << endl;
-    //cout << "testInput 2: " << testInput2() << endl;
-    //cout << "testInput 3: " << testInput3() << endl;
+    cout << "testInput 1: " << testInput1() << endl;
+    cout << "testInput 2: " << testInput2() << endl;
+    cout << "testInput 3: " << testInput3() << endl;
     cout << "testInput 4: " << testInput4() << endl;
+    cout << "testInput 5: " << testInput5() << endl;
 }
