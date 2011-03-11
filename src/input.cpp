@@ -6,6 +6,15 @@
 
 using namespace std;
 
+void printProblem(RawProblem& problem) {
+    foreach(Clause clause, problem) {
+        foreach(Literal literal, clause) {
+            cout << literal << " ";
+        }; 
+        cout << "\n";
+    };
+}
+
 void parseProblem(string file, RawProblem& problem) {
     ifstream in(file.c_str());
     if (in.is_open()) {
@@ -27,7 +36,7 @@ void parseProblem(string file, RawProblem& problem) {
         Clause clause;
         bool is_clause = true;
         for(Tok::iterator beg=tok.begin(); is_clause && beg!=tok.end();++beg){
-            if (*beg != "c") {
+            if (*beg != "c" && *beg != "p") {
                 int var = boost::lexical_cast<Literal>(*beg);
                 if (var != 0) clause.push_back(var);
             } else {
@@ -36,6 +45,7 @@ void parseProblem(string file, RawProblem& problem) {
         }
         if (is_clause) {
             is_clause = true;
+            sort(clause.begin(),clause.end(),LiteralOrder());
             problem.push_back(clause);
             clause.clear();
         }
@@ -44,4 +54,4 @@ void parseProblem(string file, RawProblem& problem) {
     in.close();
     //cout << "c finished parsing!" << endl << endl;
     //cout << endl;
-}
+}    

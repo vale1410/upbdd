@@ -51,6 +51,11 @@ size_t Backend::sizeBdd() {
     return bddStore.size();
 }
 
+void Backend::printSize() {
+    std::cout << "sizeImp: " << sizeImp() << ", sizeBdd: " << sizeBdd() << std::endl;
+}
+
+
 /*
  * one of a and b is not bddOne
  */

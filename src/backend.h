@@ -30,6 +30,7 @@ class Backend {
 
       size_t sizeImp();
       size_t sizeBdd();
+      void printSize();
 
       Level maxLevel(BddP a,BddP b);
 

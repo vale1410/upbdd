@@ -2,11 +2,11 @@
 # makefile for the upbdd project.
 #
 
-CC = g++ -Wall -g
+#CC = g++ -Wall -g
 TEST_L = bin/testBdd.o bin/testImp.o bin/testInput.o bin/testProblem.o
 TEST_O = testBdd.o testImp.o testInput.o testProblem.o
 TEST_H = testBdd.h testImp.h testInput.h testProblem.h
-#CC = g++ -O3
+CC = g++ -O3
 
 all: test
 
