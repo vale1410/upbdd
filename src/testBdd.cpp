@@ -64,23 +64,18 @@ bool testBdd3() {
 bool testBdd4() {
     Backend::SP backend(new Backend(20,20));
     Imp i1(1,0x0100,impOne); // 1
-    //Imp i2(1,0x0001,impOne); // -1
     Imp i3(1,0x0200,impOne); // 2
     ImpP iP1 = backend->add(i1);
-    //ImpP iP2 = backend->add(i2);
     ImpP iP3 = backend->add(i3);
-    //Bdd bdd1(2,bddOne,bddOne,iP1,impOne); // 2 -> 1 
     Bdd bdd2(2,bddOne,bddOne,iP1,impOne); // 2 -> 1 
     Bdd bdd3(3,bddOne,bddOne,iP1,impOne); // 3 -> 1 
-    //UpBdd upBdd1 = backend->add(bdd1);
     UpBdd upBdd2 = backend->add(bdd2);
     UpBdd upBdd3 = backend->add(bdd3);
-    //UpBdd upBdd4(iP3,bddOne);
     BddReturn result = backend->bddAnd(upBdd2,upBdd3,iP3);
     UpBdd re(result.second);
     //cout << "result is: " << result.first << " " << re.toString() << endl;
     //backend->debug();
-    return re._bddP == bddOne && re._impP->getPosImp(1) && re._impP->getPosImp(2) && !re._impP->getPosImp(3);
+    return re._bddP == bddOne && re._impP->getPosImp(1) && !re._impP->getPosImp(2) && !re._impP->getPosImp(3);
 }
 
 bool testBdd5() {

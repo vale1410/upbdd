@@ -18,11 +18,11 @@ void testHashFunction();
 
 int main () 
 {
+    testImp();
+    testBdd(); 
     testInput();
-    //testImp();
-    //testBdd(); 
-    //testSizes();
-    //testHashFunction();
+    testSizes();
+    testHashFunction();
     return 0;
 } 
 

@@ -6,6 +6,8 @@
 #include "bdd.h"
 #include "imp.h"
 #include "impStore.h"
+#include "bddStore.h"
+#include "andStore.h"
 
 class Backend {
 
@@ -52,7 +54,7 @@ class Backend {
    private:
        BddStore bddStore;
        ImpStore impStore;
-       //BddAndStore bddAndStore;  // cache for andBdd
+       AndStore andStore;  // cache for andBdd
 };
 
 #endif

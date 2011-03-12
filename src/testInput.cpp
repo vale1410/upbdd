@@ -13,16 +13,17 @@ bool testInput1() {
     Backend::SP backend(new Backend(20,20));
     RawProblem problem; 
     parseProblem("data/testInput1.cnf", problem);
-    //cout << "c what did I read: " << endl;
     UpBdd up;
     vector<bool> has_results;
     vector<BddReturn> results;
+    Clause clause;
     
     has_results.push_back(false);
     results.push_back(BddReturn());
 
-    has_results.push_back(false);
-    results.push_back(BddReturn());
+    has_results.push_back(true);
+    clause.push_back(2);
+    results.push_back(BddReturn(SAT,UpBdd(backend->makeImplication(clause),bddOne)));
     
     has_results.push_back(true);
     results.push_back(BddReturn(SAT,UpBdd(backend->makeImplication(problem[0]),bddOne)));
@@ -36,17 +37,17 @@ bool testInput1() {
         BddReturn result = backend->bddAnd(up,tmp);
         //cout << "bddAnd(" << up.toString() << ", " << tmp.toString();
         if (result.first == SAT) {
-            //cout << ") = (SAT, " << result.second.toString() << ")\n";
+        //    cout << ") = (SAT, " << result.second.toString() << ")\n";
             up = result.second;
         } else {
-            //cout << ") =  UNSAT" << endl;
+        //    cout << ") =  UNSAT" << endl;
         }
         if (has_results[i]) {
-            ok = ok && results[i] == result;
+            ok = ok && ((results[i].first == UNSAT && result.first == UNSAT) || results[i] == result);
         }
         i++;
    };
-   //backend->debug(); 
+   backend->debug(); 
    return ok;
 }
 
@@ -84,7 +85,7 @@ bool testInput2() {
             //cout << ") =  UNSAT" << endl;
         }
         if (has_results[i]) {
-            ok = ok && results[i] == result;
+            ok = ok && ((results[i].first == UNSAT && result.first == UNSAT) || results[i] == result);
         }
         i++;
    };
@@ -124,10 +125,10 @@ UpBdd conjunctRawProblem(Backend::SP backend, RawProblem problem) {
         BddReturn result = backend->bddAnd(up,tmp);
         cout << "bddAnd(" << up.toString() << ", " << tmp.toString();
         if (result.first == SAT) {
-            cout << ") = (SAT, " << result.second.toString() << ")\n";
+           cout << ") = (SAT, " << result.second.toString() << ")\n";
         up = result.second;
         } else {
-            cout << ") =  UNSAT" << endl;
+          cout << ") =  UNSAT" << endl;
         }
         backend->printSize();
    };
@@ -187,7 +188,7 @@ bool testInput6() {
     Backend::SP backend(new Backend(20,20));
     RawProblem problem; 
     parseProblem("data/testInput6.cnf", problem);
-    cout << "c what did I read: " << endl;
+    //cout << "c what did I read: " << endl;
     //printProblem(problem);
     UpBdd up;
     vector<bool> has_results;
@@ -217,7 +218,7 @@ bool testInput6() {
             //cout << ") =  UNSAT" << endl;
         }
         if (has_results[i]) {
-            ok = ok && results[i] == result;
+            ok = ok && ((results[i].first == UNSAT && result.first == UNSAT) || results[i] == result);
         }
         i++;
    };

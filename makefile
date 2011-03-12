@@ -2,16 +2,16 @@
 # makefile for the upbdd project.
 #
 
-#CC = g++ -Wall -g
+CC = g++ -Wall -g
 TEST_L = bin/testBdd.o bin/testImp.o bin/testInput.o bin/testProblem.o
 TEST_O = testBdd.o testImp.o testInput.o testProblem.o
 TEST_H = testBdd.h testImp.h testInput.h testProblem.h
-CC = g++ -O3
+#CC = g++ -O3
 
 all: test
 
-test: test.o bdd.o imp.o impStore.o bddStore.o backend.o input.o $(TEST_O)
-	$(CC) $(TEST_L) bin/test.o bin/bddStore.o bin/impStore.o bin/bdd.o bin/imp.o bin/backend.o bin/input.o -o bin/test
+test: test.o bdd.o imp.o impStore.o bddStore.o andStore.o backend.o input.o $(TEST_O)
+	$(CC) $(TEST_L) bin/test.o bin/andStore.o bin/bddStore.o bin/impStore.o bin/bdd.o bin/imp.o bin/backend.o bin/input.o -o bin/test
 	./bin/test
 
 test.o: src/test.cpp backend.h impStore.h bddStore.h input.h $(TEST_H)
@@ -31,6 +31,9 @@ impStore.o: impStore.h src/impStore.cpp
 
 bddStore.o: bddStore.h src/bddStore.cpp  
 	$(CC) -o bin/bddStore.o -c src/bddStore.cpp 
+
+andStore.o: andStore.h src/andStore.cpp  
+	$(CC) -o bin/andStore.o -c src/andStore.cpp 
 
 backend.o: backend.h src/backend.cpp 
 	$(CC) -o bin/backend.o -c src/backend.cpp 
@@ -52,6 +55,7 @@ imp.h: src/imp.h
 bdd.h: src/bdd.h src/common.h
 impStore.h: src/impStore.h src/common.h
 bddStore.h: src/bddStore.h src/impStore.h
+andStore.h: src/andStore.h src/impStore.h
 backend.h: src/backend.h src/bdd.h src/imp.h src/impStore.h
 input.h: src/input.h src/common.h
 
