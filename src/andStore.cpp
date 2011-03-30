@@ -19,7 +19,8 @@ AndStore::AndStore(unsigned long size):
  bool AndStore::lookup(const BddP a, const BddP b, const ImpP impP, BddReturn& result) const {
     Entry entry(a,b,impP);
     if (store.find(entry) != store.end()) {
-        return store.find(entry);
+        result = store.find(entry);
+        return true;
     } else {
         return false;
     }
