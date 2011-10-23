@@ -19,7 +19,7 @@ AndStore::AndStore(unsigned long size):
  bool AndStore::lookup(const BddP a, const BddP b, const ImpP impP, BddReturn& result) const {
     Entry entry(a,b,impP);
     if (store.find(entry) != store.end()) {
-        result = store.find(entry);
+        //result = store.find(entry); //TODO
         return true;
     } else {
         return false;
@@ -35,17 +35,12 @@ void AndStore::clear() {
     store.clear();
 }
 
-void debug() const {
-    foreach(const AndStoreT::value_type& i , store) {
-        i.first->toString()//TODO
-    };
-}
+//void debug() const {
+//    foreach(const AndStoreT::value_type& i , store) {
+//         //#i.first->toString()//TODO
+//    };
+//}
         
-        size_t size() const;
-    
-    private:
-        AndStoreT store;
-};
 
 
 

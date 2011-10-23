@@ -10,7 +10,7 @@ class Entry {
 
     const BddP _a ,_b;
     const ImpP _impP;
-}
+};
 
 class EntryHashFunction : std::unary_function< Entry , size_t > {
     public:
