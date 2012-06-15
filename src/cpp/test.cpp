@@ -18,11 +18,11 @@ void testHashFunction();
 
 int main () 
 {
-    testImp();
-    testBdd(); 
+    //testImp();
+    //testBdd(); 
     testInput();
-    testSizes();
-    testHashFunction();
+    //testSizes();
+    //testHashFunction();
     return 0;
 } 
 
@@ -42,8 +42,8 @@ void testSizes() {
     cout << "size of int " << sizeof(a) << endl;
     cout << "size of long " << sizeof(b) << endl;
     cout << "size of size_t " << sizeof(c) << endl;
-    cout << "where points bddOne " << bddOne << endl;
-    cout << "where points impOne " << impOne << endl;
+    //cout << "where points bddOne " << bddOne << endl;
+    //cout << "where points impOne " << impOne << endl;
 }
 
 

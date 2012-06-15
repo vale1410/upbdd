@@ -17,6 +17,7 @@ class Backend {
       typedef const boost::shared_ptr<Backend> ConstSP;
 
       Backend(unsigned int bddSize, unsigned int impSize);
+      Backend(unsigned int bddSize, unsigned int impSize, unsigned int andStore);
 
       UpBdd add(const Bdd bdd);
 

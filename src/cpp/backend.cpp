@@ -9,7 +9,15 @@
 
 Backend::Backend(unsigned int bddSize, unsigned int impSize):
     bddStore(bddSize),
-    impStore(impSize)
+    impStore(impSize),
+    andStore(bddSize)
+{
+}
+
+Backend::Backend(unsigned int bddSize, unsigned int impSize, unsigned int andStore):
+    bddStore(bddSize),
+    impStore(impSize),
+    andStore(andStore)
 {
 }
 

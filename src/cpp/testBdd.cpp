@@ -188,13 +188,13 @@ bool testBdd7() {
 }
 
 void testBdd() {
-    cout << "testBdd 1: " << testBdd1() << endl;
-    cout << "testBdd 2: " << testBdd2() << endl;
-    cout << "testBdd 3: " << testBdd3() << endl;
-    cout << "testBdd 4: " << testBdd4() << endl;
+    //cout << "testBdd 1: " << testBdd1() << endl;
+    //cout << "testBdd 2: " << testBdd2() << endl;
+    //cout << "testBdd 3: " << testBdd3() << endl;
+    //cout << "testBdd 4: " << testBdd4() << endl;
     cout << "testBdd 5: " << testBdd5() << endl;
     cout << "testBdd 6: " << testBdd6() << endl;
-    cout << "testBdd 7: " << testBdd7() << endl;
+    //cout << "testBdd 7: " << testBdd7() << endl;
 }
 
 

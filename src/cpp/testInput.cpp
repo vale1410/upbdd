@@ -12,7 +12,7 @@ bool testInput1() {
     bool ok = true;
     Backend::SP backend(new Backend(20,20));
     RawProblem problem; 
-    parseProblem("data/testInput1.cnf", problem);
+    parseProblem("../../data/testInput1.cnf", problem);
     UpBdd up;
     vector<bool> has_results;
     vector<BddReturn> results;
@@ -55,7 +55,7 @@ bool testInput2() {
     bool ok = true;
     Backend::SP backend(new Backend(20,20));
     RawProblem problem; 
-    parseProblem("data/testInput2.cnf", problem);
+    parseProblem("../../data/testInput2.cnf", problem);
     //cout << "c what did I read: " << endl;
     UpBdd up;
     vector<bool> has_results;
@@ -97,7 +97,7 @@ bool testInput3() {
     bool ok = true;
     Backend::SP backend(new Backend(20,20));
     RawProblem problem; 
-    parseProblem("data/testInput3.cnf", problem);
+    parseProblem("../../data/testInput3.cnf", problem);
     //cout << "c what did I read: " << endl;
     UpBdd up;
     vector<bool> has_results;
@@ -142,10 +142,10 @@ bool testInput4() {
     RawProblem p2; 
     RawProblem p3; 
     RawProblem p4; 
-    parseProblem("data/testInput4_1.cnf", p1);
-    parseProblem("data/testInput4_2.cnf", p2);
-    parseProblem("data/testInput4_3.cnf", p3);
-    parseProblem("data/testInput4_4.cnf", p4);
+    parseProblem("../../data/testInput4_1.cnf", p1);
+    parseProblem("../../data/testInput4_2.cnf", p2);
+    parseProblem("../../data/testInput4_3.cnf", p3);
+    parseProblem("../../data/testInput4_4.cnf", p4);
     //cout << "4_1\n";
     UpBdd up1 = conjunctRawProblem(backend, p1);
     //cout << "4_2\n";
@@ -166,10 +166,10 @@ bool testInput5() {
     RawProblem p2; 
     RawProblem p3; 
     RawProblem p4; 
-    parseProblem("data/testInput5_1.cnf", p1);
-    parseProblem("data/testInput5_2.cnf", p2);
-    parseProblem("data/testInput5_3.cnf", p3);
-    parseProblem("data/testInput5_4.cnf", p4);
+    parseProblem("../../data/testInput5_1.cnf", p1);
+    parseProblem("../../data/testInput5_2.cnf", p2);
+    parseProblem("../../data/testInput5_3.cnf", p3);
+    parseProblem("../../data/testInput5_4.cnf", p4);
     //cout << "5_1\n";
     UpBdd up1 = conjunctRawProblem(backend, p1);
     //cout << "5_2\n";
@@ -230,7 +230,7 @@ bool testInput7() {
     bool ok = true;
     Backend::SP backend(new Backend(1000000,1000000));
     RawProblem p; 
-    parseProblem("data/counting-easier-php-012-010.sat05-1172.reshuffled-07.cnf", p);
+    parseProblem("../../data/counting-easier-php-012-010.sat05-1172.reshuffled-07.cnf", p);
     //printProblem(p);
     sort(p.begin(),p.end(),ClauseOrder());
     //printProblem(p);
@@ -242,11 +242,11 @@ bool testInput7() {
 }
 
 void testInput(){
-    //cout << "testInput 1: " << testInput1() << endl;
-    //cout << "testInput 2: " << testInput2() << endl;
-    //cout << "testInput 3: " << testInput3() << endl;
-    //cout << "testInput 4: " << testInput4() << endl;
-    //cout << "testInput 5: " << testInput5() << endl;
-    //cout << "testInput 6: " << testInput6() << endl;
-    cout << "testInput 7: " << testInput7() << endl;
+    cout << "testInput 1: " << testInput1() << endl;
+    cout << "testInput 2: " << testInput2() << endl;
+    cout << "testInput 3: " << testInput3() << endl;
+    cout << "testInput 4: " << testInput4() << endl;
+    cout << "testInput 5: " << testInput5() << endl;
+    cout << "testInput 6: " << testInput6() << endl;
+    //cout << "testInput 7: " << testInput7() << endl;
 }
