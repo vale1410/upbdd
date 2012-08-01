@@ -243,10 +243,10 @@ bool testInput7() {
 
 void testInput(){
     cout << "testInput 1: " << testInput1() << endl;
-    cout << "testInput 2: " << testInput2() << endl;
-    cout << "testInput 3: " << testInput3() << endl;
-    cout << "testInput 4: " << testInput4() << endl;
-    cout << "testInput 5: " << testInput5() << endl;
-    cout << "testInput 6: " << testInput6() << endl;
+    //cout << "testInput 2: " << testInput2() << endl;
+    //cout << "testInput 3: " << testInput3() << endl;
+    //cout << "testInput 4: " << testInput4() << endl;
+    //cout << "testInput 5: " << testInput5() << endl;
+    //cout << "testInput 6: " << testInput6() << endl;
     //cout << "testInput 7: " << testInput7() << endl;
 }
